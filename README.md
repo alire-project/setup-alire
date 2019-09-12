@@ -1,9 +1,12 @@
-# JavaScript Action Template
+# Setup Alire Action
 
-This template offers an easy way to get started writing a JavaScript action with TypeScript compile time support, unit testing with Jest and using the GitHub Actions Toolkit.
+GitHub action to setup Alire, the Ada/SPARK package manager.
 
-## Getting Started
+## Usage
 
-See the walkthrough located [here](https://github.com/actions/toolkit/blob/master/docs/javascript-action.md).
+Add this line to your workflow steps:
+```
+    - uses: alire-project/setup-alire@dev
+```
 
-In addition to walking your through how to create an action, it also provides strategies for versioning, releasing and referencing your actions.
+The command line tool `alr` will be available in `PATH`.
