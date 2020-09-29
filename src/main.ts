@@ -44,7 +44,7 @@ async function run() {
             return;
         }
 
-        await exec.exec('sudo apt install gnat gprbuild');
+        await exec.exec('sudo apt install gnat-9 gprbuild');
         await exec.exec(`git clone -b ${repo_branch} ${repo_url} ${alire_src}`);
         process.chdir(alire_src);
         await exec.exec(`git submodule update --init --recursive`);
