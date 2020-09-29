@@ -1,0 +1,12 @@
+name: Sanity check
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: CI on ubuntu-latest
+
+    runs-on: ubuntu-latest
+
+    steps:
+       - uses: alire-project/setup-alire@dev
