@@ -48,7 +48,7 @@ async function run() {
         await exec.exec(`git clone -b ${repo_branch} ${repo_url} ${alire_src}`);
         process.chdir(alire_src);
         await exec.exec(`git submodule update --init --recursive`);
-        await exec.exec(`gprbuild -j0 -p -XSELFBUILD=False -P alr_env.gpr`);
+        await exec.exec(`gprbuild -j0 -p -XSELFBUILD=False -P alr_env.gpr -cargs -fPIC`);
 
         core.addPath(path.join(process.cwd(), 'bin'));
     } catch (error) {
