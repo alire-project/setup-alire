@@ -3,10 +3,11 @@ name: Sanity check
 on: [push, pull_request]
 
 jobs:
-  build:
-    name: CI on ubuntu-latest
-
-    runs-on: ubuntu-latest
-
+  sanity-check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-       - uses: alire-project/setup-alire@dev
+      - uses: alire-project/setup-alire@latest-stable
+      - run: alr version
