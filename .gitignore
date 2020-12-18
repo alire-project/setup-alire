@@ -41,7 +41,7 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
+# node_modules/ # needed according to https://docs.github.com/en/free-pro-team@latest/actions/creating-actions/creating-a-javascript-action
 jspm_packages/
 
 # TypeScript v1 declaration files
