@@ -22,6 +22,9 @@ async function run() {
         await exec.exec(`gprbuild -j0 -p -XSELFBUILD=False -P alr_env.gpr -cargs -fPIC`);
 
         core.addPath(path.join(process.cwd(), 'bin'));
+
+        console.log("Built version:");
+        await exec.exec(`alr version`);
     } catch (error) {
         core.setFailed(error.message);
     }
