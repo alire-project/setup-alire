@@ -23,8 +23,11 @@ async function run() {
 
         core.addPath(path.join(process.cwd(), 'bin'));
 
-        console.log("Built version:");
-        await exec.exec(`alr version`);
+        // For some reason, this makes the action step to never finish on
+        // Windows
+        // console.log("Built version:");
+        // await exec.exec(`alr -n version`);
+        console.log("SUCCESS");
     } catch (error) {
         core.setFailed(error.message);
     }
