@@ -1,3 +1,6 @@
+# Changes to the latest-devel branch must be proposed via PRs in the
+# next-latest-devel branch.
+
 name: Sanity check
 
 on: pull_request
@@ -11,26 +14,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      # Needed for the script in next step
-      - uses: actions/checkout@v2
+      - name: Check on proper branch
+        if: github.head_ref != 'next-latest-devel'
+        uses: actions/github-script@v3
         with:
-          fetch-depth: 0
-          # We need the whole history
-
-      # See comment below about merging-devel
-      - run: ./scripts/matching-branches.sh
+          script: |
+            core.setFailed('PRs for latest-stable must come from next-latest-devel')
 
       # setup-alire@latest-devel requires a GNAT compiler
       - uses: ada-actions/toolchain@ce2020
         with: 
            distrib: community # fsf fails on Windows
 
-      # To be able to test the commit being submitted, a secondary branch
-      # pointing to it must be created. Cumbersome but I cannot think of
-      # another way that allows selftest of the yet-to-be-merged commit, as GHA
-      # doesn't fly with something like setup-alire@${{ github.sha }}. The
-      # matching-branches step ensures that the branches match though, so you
-      # cannot forget about it.
-      - uses: alire-project/setup-alire@merging-devel
+      - uses: alire-project/setup-alire@next-latest-devel
 
       - run: alr version
