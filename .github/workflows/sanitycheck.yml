@@ -9,11 +9,19 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      # See comment below about merging-devel
+      - run: scripts/matching-branches.sh
+
       # setup-alire@latest-devel requires a GNAT compiler
       - uses: ada-actions/toolchain@ce2020
         with: 
            distrib: community # fsf fails on Windows
 
-      - uses: alire-project/setup-alire@latest-devel
+      # To be able to test the commit being submitted, a secondary branch
+      # pointing to it must be created. Cumbersome but I cannot think of
+      # another way that allows selftest of the yet-to-be-merged commit. The
+      # matching-branches step ensures that the branches match though, so you
+      # cannot forget about it.
+      - uses: alire-project/setup-alire@merging-devel
 
       - run: alr version
