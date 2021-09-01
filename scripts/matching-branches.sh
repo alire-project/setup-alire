@@ -12,5 +12,6 @@ if [ "$commit1" == "$commit2" ]; then
     exit 0
 else
     echo Commits do not match: ensure merging-devel points to your last commit
+    echo "$commit1 (merging-devel) != $commit2 (this PR)"
     exit 1
 fi
