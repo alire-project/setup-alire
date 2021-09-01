@@ -23,6 +23,8 @@ async function run() {
 
         core.addPath(path.join(process.cwd(), 'bin'));
 
+        await exec.exec(`alr -n toolchain --disable-assistant`);
+
         // For some reason, this makes the action step to never finish on
         // Windows
         // console.log("Built version:");
