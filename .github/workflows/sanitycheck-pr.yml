@@ -2,7 +2,7 @@
 # latest-stable-next. This way we can check the action just as GHA is going to
 # use it.
 
-name: Sanity check
+name: Sanity check for PRs
 
 on: pull-request
 
@@ -21,6 +21,6 @@ jobs:
         script: |
           core.setFailed('PRs for latest-stable must come from latest-stable-next')
 
-      - uses: alire-project/setup-alire@latest-stable-next
+      - uses: alire-project/setup-alire@latest-stable
 
       - run: alr version
