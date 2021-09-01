@@ -25,10 +25,11 @@ async function run() {
 
         await exec.exec(`alr -n toolchain --disable-assistant`);
 
-        // For some reason, this makes the action step to never finish on
-        // Windows
-        // console.log("Built version:");
-        // await exec.exec(`alr -n version`);
+        // For some reason, this makes the action step to never finish on Windows
+        if (process.platform != "win32") {
+            console.log("Built version:");
+            await exec.exec(`alr -n version`);
+        }
         console.log("SUCCESS");
     } catch (error) {
         core.setFailed(error.message);
