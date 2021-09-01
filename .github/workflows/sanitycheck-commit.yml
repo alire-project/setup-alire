@@ -1,4 +1,4 @@
-name: Sanity check
+name: Sanity check for pushes
 
 on: 
   push:
