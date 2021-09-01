@@ -1,10 +1,10 @@
 # Changes to the latest-stable branch must be proposed via PRs in the branch
-# latest-stable-next. This way we can check the action just as GHA is going to
+# next-latest-stable. This way we can check the action just as GHA is going to
 # use it.
 
 name: Sanity check for PRs
 
-on: pull-request
+on: pull_request
 
 jobs:
   sanity-check:
@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'latest-stable-next'
+        if: github.head_ref != 'next-latest-stable'
         uses: actions/github-script@v3
         with:
-        script: |
-          core.setFailed('PRs for latest-stable must come from latest-stable-next')
+          script: |
+            core.setFailed('PRs for latest-stable must come from next-latest-stable')
 
-      - uses: alire-project/setup-alire@latest-stable
+      - uses: alire-project/setup-alire@next-latest-stable
 
       - run: alr version
