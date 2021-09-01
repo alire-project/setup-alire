@@ -5,7 +5,7 @@
 target=devel
 
 commit1=$(git log origin/merging-devel -1 --no-decorate --oneline | cut -f1 -d' ')
-commit2=$(git log -1 --no-decorate --oneline | cut -f1 -d' ')
+commit2=$(git log HEAD~1 -1 --no-decorate --oneline | cut -f1 -d' ')
 
 if [ "$commit1" == "$commit2" ]; then
     echo Commits match
