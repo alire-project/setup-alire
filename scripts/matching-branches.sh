@@ -7,7 +7,7 @@ target=devel
 # See whats happening
 git log --graph --decorate --pretty=oneline --abbrev-commit --all | head -30
 
-commit1=$(git log origin/merging-$target -1 --no-decorate --oneline | cut -f1 -d' ')
+commit1=$(git log origin/merging-$target -1 --no-decorate --oneline --no-abbrev-commit | cut -f1 -d' ')
 commit2=$(git rev-list --parents HEAD -n1 | cut -f3 -d' ')
 # <hash> <parent1 hash> <parent2 hash>
 
