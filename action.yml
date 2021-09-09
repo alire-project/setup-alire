@@ -1,10 +1,17 @@
-name: 'Node 12 Template Action'
-description: 'Get started with Node actions'
-author: 'GitHub'
+name: 'Setup Alire'
+description: 'Prepare Alire to be run in subsequent actions'
+author: 'Alire Project'
+
 inputs:
-  myInput:
-    description: 'Input to use'
-    default: 'world'
+  toolchain:
+    description: Arguments to pass to `alr toolchain` after setup
+    required: false
+    default: 'gnat_native gprbuild<2000'
+  toolchain_dir:
+    description: Location to install the toolchain under
+    required: false
+    default: ''
+
 runs:
   using: 'node12'
   main: 'lib/main.js'

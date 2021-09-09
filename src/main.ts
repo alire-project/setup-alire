@@ -23,6 +23,14 @@ async function run() {
 
         core.addPath(path.join(process.cwd(), 'bin'));
 
+        const tool_args : string = core.getInput('toolchain');
+        const tool_dir  : string = core.getInput('toolchain_dir');
+
+        if (tool_args.length > 0) {
+            await exec.exec(`alr -n toolchain --select ${tool_args}` 
+                            + `${tool_dir.length > 0 ? " --install-dir " + tool_dir : ""}`);
+        }
+
         // For some reason, this makes the action step to never finish on Windows
         if (process.platform != "win32") {
             console.log("Built version:");
