@@ -28,4 +28,4 @@ jobs:
 
       - uses: alire-project/setup-alire@next-latest-devel
 
-      - run: alr version
+      - run: alr -n version
