@@ -19,7 +19,7 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('PRs for latest-stable must come from next-latest-devel')
+            core.setFailed('PRs for latest-devel must come from next-latest-devel')
 
       # setup-alire@latest-devel requires a GNAT compiler
       - uses: ada-actions/toolchain@ce2020
