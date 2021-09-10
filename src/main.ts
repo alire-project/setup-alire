@@ -27,7 +27,8 @@ async function run() {
         const tool_dir  : string = core.getInput('toolchain_dir');
 
         if (tool_args.length > 0) {
-            await exec.exec(`alr -n toolchain --select ${tool_args}` 
+            await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} `
+                            + `${tool_args}` 
                             + `${tool_dir.length > 0 ? " --install-dir " + tool_dir : ""}`);
         }
 
