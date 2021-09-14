@@ -1,32 +1,31 @@
+# Changes to the latest-devel branch must be proposed via PRs in the
+# next-latest-devel branch.
+
 name: Sanity check
 
-on: [push, pull_request]
-# I doubt this makes sense for PRs, as the workflow is downloading the version
-# already merged into the base branch, not the current code being merged.
+on: pull_request
 
 jobs:
   sanity-check:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+
     runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: alire-project/setup-alire@latest-stable
-        if: >
-          contains(github.base_ref, 'latest-stable') || 
-          contains(github.ref, 'latest-stable')
+      - name: Check on proper branch
+        if: github.head_ref != 'next-latest-devel'
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('PRs for latest-devel must come from next-latest-devel')
 
       # setup-alire@latest-devel requires a GNAT compiler
       - uses: ada-actions/toolchain@ce2020
-        if: >
-          contains(github.base_ref, 'latest-devel') || 
-          contains(github.ref, 'latest-devel')
         with: 
            distrib: community # fsf fails on Windows
 
-      - uses: alire-project/setup-alire@latest-devel
-        if: >
-          contains(github.base_ref, 'latest-devel') || 
-          contains(github.ref, 'latest-devel')
+      - uses: alire-project/setup-alire@next-latest-devel
 
-      - run: alr version
+      - run: alr -n version
