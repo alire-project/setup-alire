@@ -6,7 +6,7 @@ inputs:
   toolchain:
     description: Arguments to pass to `alr toolchain` after setup
     required: false
-    default: 'gnat_native gprbuild<2000'
+    default: 'gnat_native gprbuild'
   toolchain_dir:
     description: Location to install the toolchain under
     required: false
@@ -21,5 +21,5 @@ runs:
     - name: Set up Alire
       uses: alire-project/setup-alire@latest-devel
       with:
-        toolchain: ${{ toolchain }}
-        toolchain_dir: ${{ toolchain_dir }}
+        toolchain: ${{ inputs.toolchain }}
+        toolchain_dir: ${{ inputs.toolchain_dir }}
