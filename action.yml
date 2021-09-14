@@ -1,4 +1,4 @@
-name: 'Setup Alire'
+name: 'Setup Alire (self-built)'
 description: 'Prepare Alire to be run in subsequent actions'
 author: 'Alire Project'
 
@@ -13,5 +13,13 @@ inputs:
     default: ''
 
 runs:
-  using: 'node12'
-  main: 'lib/main.js'
+  using: 'composite'
+  steps: 
+    - name: Set up GNAT
+      uses: ada-actions/toolchain@ce2020
+
+    - name: Set up Alire
+      uses: alire-project/setup-alire@latest-devel
+      with:
+        toolchain: ${{ toolchain }}
+        toolchain_dir: ${{ toolchain_dir }}

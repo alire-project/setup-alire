@@ -15,17 +15,12 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'next-latest-devel'
+        if: github.head_ref != 'next-latest-devel-self-build'
         uses: actions/github-script@v3
         with:
           script: |
             core.setFailed('PRs for latest-devel must come from next-latest-devel')
 
-      # setup-alire@latest-devel requires a GNAT compiler
-      - uses: ada-actions/toolchain@ce2020
-        with: 
-           distrib: community # fsf fails on Windows
-
-      - uses: alire-project/setup-alire@next-latest-devel
+      - uses: alire-project/setup-alire@next-latest-devel-self-build
 
       - run: alr -n version
