@@ -15,8 +15,17 @@ inputs:
 runs:
   using: 'composite'
   steps: 
-    - name: Set up GNAT
-      uses: ada-actions/toolchain@ce2020
+    - name: Set up GNAT (FSF)
+      if: runner.os == 'Linux'
+      uses: ada-actions/toolchain@ce2021
+      with:
+        distrib: fsf
+
+    - name: Set up GNAT (FSF)
+      if: runner.os != 'Linux'
+      uses: ada-actions/toolchain@ce2021
+      with:
+        distrib: community
 
     - name: Set up Alire
       uses: alire-project/setup-alire@latest-devel
