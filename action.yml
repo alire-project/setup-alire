@@ -1,6 +1,17 @@
 name: 'Alire Setup'
 description: 'Install Alire package manager'
-author: 'Alire-projct'
+author: 'Alire Project'
+
+inputs:
+  toolchain:
+    description: Arguments to pass to `alr toolchain` after setup
+    required: false
+    default: 'gnat_native gprbuild'
+  toolchain_dir:
+    description: Location to install the toolchain under
+    required: false
+    default: ''
+
 runs:
   using: 'node12'
   main: 'lib/main.js'
