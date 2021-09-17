@@ -2,11 +2,11 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 const path = require("path");
 
-const ver="1.0.1"
+const ver="1.1.0"
 const base_url="https://github.com/alire-project/alire/releases/download/";
-const linux_url = base_url + "v" + ver + "/alr-" + ver + "-bin-linux.zip";
-const darwin_url= base_url + "v" + ver + "/alr-" + ver + "-bin-macos.zip";
-const win32_url = base_url + "v" + ver + "/alr-" + ver + "-bin-windows.zip";
+const linux_url = base_url + "v" + ver + "/alr-" + ver + "-bin-x86_64-linux.zip";
+const darwin_url= base_url + "v" + ver + "/alr-" + ver + "-bin-x86_64-macos.zip";
+const win32_url = base_url + "v" + ver + "/alr-" + ver + "-bin-x86_64-windows.zip";
 
 async function run() {
     try {
@@ -31,7 +31,12 @@ async function run() {
         core.addPath(path.join(process.cwd(), "alire_install", 'bin'));
 
     } catch (error) {
-        core.setFailed(error.message);
+        if (error instanceof Error) {
+            core.setFailed(error.message);
+        }
+        else {
+            core.setFailed("Unknown error situation");
+        }
     }
 }
 
