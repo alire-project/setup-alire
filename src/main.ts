@@ -86,6 +86,10 @@ async function run() {
         if (tool_args.length > 0) {
             if (tool_dir.length == 0) {
                 await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} ${tool_args}`);
+                // Disable the assistant anyway if we have selected something. This will no longer be necessary after 1.1.1
+                if (tool_args != "--disable-assistant") {
+                    await exec.exec(`alr -n toolchain --disable-assistant`);
+                }
             } else {
                 await exec.exec(`alr -n toolchain --install ${tool_args} --install-dir ${tool_dir}`);
             }
