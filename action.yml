@@ -3,12 +3,20 @@ description: 'Install Alire package manager'
 author: 'Alire Project'
 
 inputs:
+  version:
+    description: Use this argument to install a stable release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
+    required: false
+    default: '1.1.0'
+  branch:
+    description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
+    required: false
+    default: ''
   toolchain:
-    description: Arguments to pass to `alr toolchain` after setup
+    description: Arguments to pass to `alr toolchain` after setup.
     required: false
     default: 'gnat_native gprbuild'
   toolchain_dir:
-    description: Location to install the toolchain under
+    description: Location to install the toolchain under.
     required: false
     default: ''
 

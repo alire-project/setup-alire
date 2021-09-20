@@ -1,5 +1,5 @@
-# Changes to the latest-stable branch must be proposed via PRs in the branch
-# next-latest-stable. This way we can check the action just as GHA is going to
+# Changes to the v1 branch must be proposed via PRs in the branch
+# v1-next. This way we can check the action just as GHA is going to
 # use it.
 
 name: Sanity check for PRs
@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'next-latest-stable'
+        if: github.head_ref != 'v1-next'
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('PRs for latest-stable must come from next-latest-stable')
+            core.setFailed('PRs for latest-stable must come from v1-next')
 
-      - uses: alire-project/setup-alire@next-latest-stable
+      - uses: alire-project/setup-alire@v1-next
 
       - run: alr -n version
