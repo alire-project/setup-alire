@@ -100,6 +100,20 @@ async function run() {
         await exec.exec(`alr -n version`);
         await exec.exec(`alr -n toolchain`);
 
+        if (process.platform == "win32") {
+            // At this point, in Windows msys2 will have been installed by the previous commands.
+            // We need to do a full update and install tar from it. The full update should be moved
+            // to `alr` itself in some future update (may be even the tar)
+
+            // Doing it twice is the recommendation from msys2 install instructions
+            // Calling through its bash is the way to operate within the msys2 env
+            await exec.exec(`C:\\Users\\runneradmin\\.cache\\alire\\msys64\\usr\\bin\\bash.exe -l -c "pacman --noconfirm -Syu"`);
+            await exec.exec(`C:\\Users\\runneradmin\\.cache\\alire\\msys64\\usr\\bin\\bash.exe -l -c "pacman --noconfirm -Su"`);
+
+            // Install tar
+            await exec.exec(`C:\\Users\\runneradmin\\.cache\\alire\\msys64\\usr\\bin\\bash.exe -l -c "pacman --noconfirm -S tar"`);
+        }
+
         console.log("SUCCESS");
 
     } catch (error) {
