@@ -6,7 +6,7 @@ inputs:
   version:
     description: Use this argument to install a stable release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
     required: false
-    default: '1.2.0'
+    default: '1.2.1'
   branch:
     description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
     required: false
@@ -16,10 +16,48 @@ inputs:
     required: false
     default: 'gnat_native gprbuild'
   toolchain_dir:
-    description: Location to install the toolchain under.
+    description: Location to install toolchain under.
     required: false
     default: ''
 
 runs:
-  using: 'node12'
-  main: 'lib/main.js'
+  using: "composite"
+  steps:
+
+    # We don't cache branch builds for now, as this would require to check the head commit
+    - name: Reuse cached installation
+      if: ${{ inputs.branch == '' }}
+      id: cache-alr
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/alire
+          ~/.config/alire
+          ./alire_install
+        key: alr-v${{ inputs.version }}-t_${{ inputs.toolchain }}-o_${{ runner.os }}
+        # .cache contains msys64 install on Windows
+        # .config contains the toolchain at the default location, besides index config
+        # ./alire_install contains alr itself
+
+    # Restore path on cache hit
+    - if: ${{ steps.cache-alr.outputs.cache-hit == 'true' && runner.os != 'Windows' }}
+      shell: bash
+      run: echo "$PWD/alire_install/bin" >> $GITHUB_PATH
+    - if: ${{ steps.cache-alr.outputs.cache-hit == 'true' && runner.os == 'Windows' }}
+      shell: pwsh
+      run: Add-Content $env:GITHUB_PATH "${PWD}\alire_install\bin"
+
+    # Install alr on cache miss
+    - if: ${{ steps.cache-alr.outputs.cache-hit != 'true' }}
+      uses: alire-project/setup-alire@v1  # v1 is the actual installer, uncached
+      with:
+        version: ${{ inputs.version }}
+        branch: ${{ inputs.branch }}
+        toolchain: ${{ inputs.toolchain }}
+        toolchain_dir: ${{ inputs.toolchain_dir }}
+
+    # Display result for the record
+    - shell: bash
+      run: |
+        which alr
+        alr --version

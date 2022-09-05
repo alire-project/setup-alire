@@ -1,5 +1,5 @@
-# Changes to the v1 branch must be proposed via PRs in the branch
-# v1-next. This way we can check the action just as GHA is going to
+# Changes to the v1+cache branch must be proposed via PRs in the branch
+# v1+cache-next. This way we can check the action just as GHA is going to
 # use it.
 
 name: Sanity check for PRs
@@ -16,12 +16,16 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'v1-next'
+        if: github.head_ref != 'v1+cache-next'
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('PRs for latest-stable must come from v1-next')
+            core.setFailed('PRs for latest-stable@v1+cache must come from v1+cache-next')
 
-      - uses: alire-project/setup-alire@v1-next
+      - uses: alire-project/setup-alire@v1+cache-next
 
+      # Verify alr information
       - run: alr -n version
+
+      # Verify the toolchain is functional
+      - run: alr get --build libhello
