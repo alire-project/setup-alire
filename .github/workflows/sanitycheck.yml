@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'v1-next'
+        if: github.head_ref != 'v2-next'
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('PRs for latest-stable must come from v1-next')
+            core.setFailed('PRs for latest-stable@v2 must come from v2-next')
 
-      - uses: alire-project/setup-alire@v1-next
+      - uses: alire-project/setup-alire@v2-next
 
       - run: alr -n version
