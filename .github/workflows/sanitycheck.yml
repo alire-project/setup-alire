@@ -24,4 +24,8 @@ jobs:
 
       - uses: alire-project/setup-alire@v2-next
 
+      # Verify alr information
       - run: alr -n version
+
+      # Verify the toolchain is functional
+      - run: alr get --build libhello

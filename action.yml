@@ -16,18 +16,49 @@ inputs:
     required: false
     default: 'gnat_native gprbuild'
   toolchain_dir:
-    description: Location to install the toolchain under.
+    description: Location to install toolchain under.
     required: false
-    default: 'alr_install'
+    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Reuse cached installation
+    - name: Debug
+      shell: pwsh
+      run: |
+        echo Workspace: ${env:GITHUB_WORKSPACE}
+
+    - name: Reuse cached installation, only for default toolchain locations
+      if: ${{ inputs.toolchain_dir == '' }}
       id: cache-alr
       uses: actions/cache@v3
-      path: ${{ toolchain_dir }}
-      key: alr-v${{ version }}-b:${{ branch }}-t:${{ toolchain }}-d:${{ toolchain_dir }}
+      with:
+        path: |
+          ~/.cache/alire
+          ~/.config/alire
+          ./alire_install
+        key: alr-v${{ inputs.version }}-b_${{ inputs.branch }}-t_${{ inputs.toolchain }}-o_${{ runner.os }}-4
+        # .cache contains msys64 install on Windows
+        # .config contains the toolchain at the default location, besides index config
+        # Final number is used to forcibly invalidate cache
 
     - if: ${{ steps.cache-alr.outputs.cache-hit != 'true' }}
       uses: alire-project/setup-alire@v1  # v1 is the actual installer, uncached
+      with:
+        version: ${{ inputs.version }}
+        branch: ${{ inputs.branch }}
+        toolchain: ${{ inputs.toolchain }}
+        toolchain_dir: ${{ inputs.toolchain_dir }}
+
+    - if: ${{ steps.cache-alr.outputs.cache-hit == 'true' && runner.os != 'Windows' }}
+      shell: bash
+      run: |
+        echo "Restoring Linux/macOS PATH: $PWD/alire_install/bin"
+        echo "$PWD/alire_install/bin" >> $GITHUB_PATH
+
+    - if: ${{ steps.cache-alr.outputs.cache-hit == 'true' && runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        echo "Restoring Windows PATH: ${PWD}\alire_install\bin"
+        Add-Content $env:GITHUB_PATH "${PWD}\alire_install\bin"
+
