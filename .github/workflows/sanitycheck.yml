@@ -20,7 +20,7 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('PRs for latest-stable must come from v1-next, but branch is: ' + ${{ github.head_ref }})
+            core.setFailed(`PRs for latest-stable must come from v1-next, but branch is ${{ github.head_ref }}`)
 
       - uses: alire-project/setup-alire@v1-next
 
