@@ -58,7 +58,9 @@ async function install_release(version : string) {
             throw new Error('Unknown platform ' + process.platform);
     }
 
-    var url : string = `${base_url}/v${version}/alr-${version}-${infix}-${platform}.zip`;
+    const v : string = (version == "nightly" ? "" : "v")
+
+    const url : string = `${base_url}/${v}${version}/alr-${version}-${infix}-${platform}.zip`;
 
     console.log(`Downloading file: ${url} to ${install_dir}`)
     const dlFile = await tc.downloadTool(url);

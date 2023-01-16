@@ -22,6 +22,14 @@ jobs:
           script: |
             core.setFailed(`PRs for latest-stable must come from v1-next, but branch is ${{ github.head_ref }}`)
 
-      - uses: alire-project/setup-alire@v1-next
+      - name: Check latest stable
+        uses: alire-project/setup-alire@v1-next
+
+      - run: alr -n version
+
+      - name: Check nightly
+        uses: alire-project/setup-alire@v1-next
+        with:
+          version: 'nightly'
 
       - run: alr -n version
