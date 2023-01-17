@@ -6,8 +6,6 @@ name: Sanity check for PRs
 
 on:
   pull_request:
-  push:
-    branch: v2-next
 
 jobs:
   sanity-check:
