@@ -39,7 +39,7 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
-        key: alr-v${{ inputs.version }}-t:${{ inputs.toolchain }}-o:${{ runner.os }}
+        key: alr[${{ inputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}]
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself

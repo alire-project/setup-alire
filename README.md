@@ -2,11 +2,20 @@
 
 GitHub action to setup Alire, the Ada/SPARK package manager.
 
+Version v2 adds caching to speed-up deployment, particularly on Windows.
+
 ## Usage
 
-To use the latest binary release of the Alire project, add this line to your workflow steps:
+To use the latest stable release of the Alire project, add this line to your workflow steps:
 ```yaml
-    - uses: alire-project/setup-alire@v1
+    - uses: alire-project/setup-alire@v2
+```
+
+To use a precompiled nightly build of the development version, use the following:
+```yaml
+    - uses: alire-project/setup-alire@v2
+      with:
+        version: "nightly"
 ```
 
 To use a development version compiled from sources (if you known what
@@ -43,4 +52,8 @@ inputs:
     description: Location to install the toolchain under.
     required: false
     default: ''
+  cache:
+    description: Whether to reuse a cached previous install. Only works for stable releases.
+    required: false
+    default: true
 ```
