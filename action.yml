@@ -16,10 +16,46 @@ inputs:
     required: false
     default: 'gnat_native gprbuild'
   toolchain_dir:
-    description: Location to install the toolchain under.
+    description: Location to install toolchain under.
     required: false
     default: ''
+  cache:
+    description: Whether to reuse a cached previous run. Only works for stable releases.
+    required: false
+    default: true
 
 runs:
-  using: 'node16'
-  main: 'lib/main.js'
+  using: "composite"
+  steps:
+    # We don't cache branch builds for now, as this would require to check the head commit
+    - name: Reuse cached installation
+      if: ${{ inputs.branch == '' && inputs.version != 'nightly' && inputs.cache }}
+      id: cache-alr
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/alire
+          ~/.config/alire
+          ./alire_install
+        key: alr-v${{ inputs.version }}-t_${{ inputs.toolchain }}-o_${{ runner.os }}
+        # .cache contains msys64 install on Windows
+        # .config contains the toolchain at the default location, besides index config
+        # ./alire_install contains alr itself
+
+    # To run the old setup action which is javascript
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - uses: actions/checkout@v3
+
+    # Install alr. If found cached it will return without reinstalling.
+    - run: node lib/main.js '${{ toJSON(inputs) }}'
+      shell: bash
+
+    # Display result for the record
+    - shell: bash
+      run: |
+        which alr
+        alr --version

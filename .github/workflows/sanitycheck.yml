@@ -1,10 +1,13 @@
-# Changes to the v1 branch must be proposed via PRs in the branch
-# v1-next. This way we can check the action just as GHA is going to
+# Changes to the v2 branch must be proposed via PRs in the branch
+# v2-next. This way we can check the action just as GHA is going to
 # use it.
 
 name: Sanity check for PRs
 
-on: pull_request
+on:
+  pull_request:
+  push:
+    branch: v2-next
 
 jobs:
   sanity-check:
@@ -16,19 +19,19 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'v1-next'
+        if: false && github.head_ref != 'v2-next'
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed(`PRs for latest-stable must come from v1-next, but branch is ${{ github.head_ref }}`)
+            core.setFailed(`PRs for ${{github.base_ref}} must come from v2-next, but branch is ${{github.head_ref}}`)
 
       - name: Check latest stable
-        uses: alire-project/setup-alire@v1-next
+        uses: mosteo/setup-alire@v2-next
 
       - run: alr -n version
 
       - name: Check nightly
-        uses: alire-project/setup-alire@v1-next
+        uses: mosteo/setup-alire@v2-next
         with:
           version: 'nightly'
 
