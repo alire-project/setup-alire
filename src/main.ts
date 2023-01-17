@@ -69,7 +69,7 @@ async function install_release(version : string) : Promise<boolean> { // Return 
     core.addPath(path.join(process.cwd(), install_dir, 'bin'));
 
     // Check if this install is cached
-    if (fs.existsSync(`${install_dir}/${filename}`)) {
+    if (fs.existsSync(path.join(process.cwd(), install_dir, 'LICENSE.txt'))) {
         console.log(`CACHE HIT: reusing installation of ${filename}`)
         return true
     }

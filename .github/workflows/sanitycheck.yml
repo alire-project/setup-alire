@@ -18,21 +18,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Check on proper branch
+      - name: Check PR comes from proper branch
         if: false && github.head_ref != 'v2-next'
         uses: actions/github-script@v3
         with:
           script: |
             core.setFailed(`PRs for ${{github.base_ref}} must come from v2-next, but branch is ${{github.head_ref}}`)
 
-      - name: Check latest stable
+      - name: Check action itself
         uses: mosteo/setup-alire@v2-next
-
-      - run: alr -n version
-
-      - name: Check nightly
-        uses: mosteo/setup-alire@v2-next
-        with:
-          version: 'nightly'
 
       - run: alr -n version

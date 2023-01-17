@@ -20,13 +20,15 @@ inputs:
     required: false
     default: ''
   cache:
-    description: Whether to reuse a cached previous run. Only works for stable releases.
+    description: Whether to reuse a cached previous install. Only works for stable releases.
     required: false
     default: true
 
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v3
+
     # We don't cache branch builds for now, as this would require to check the head commit
     - name: Reuse cached installation
       if: ${{ inputs.branch == '' && inputs.version != 'nightly' && inputs.cache }}
@@ -37,7 +39,7 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
-        key: alr-v${{ inputs.version }}-t_${{ inputs.toolchain }}-o_${{ runner.os }}
+        key: alr-v${{ inputs.version }}-t:${{ inputs.toolchain }}-o:${{ runner.os }}
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
@@ -48,9 +50,8 @@ runs:
       with:
         node-version: 16
 
-    - uses: actions/checkout@v3
-
-    # Install alr. If found cached it will return without reinstalling.
+    # Install alr. If found cached it will return without reinstalling (but setting PATH).
+    # We forward inputs as they're bugged for JS in composite actions.
     - run: node lib/main.js '${{ toJSON(inputs) }}'
       shell: bash
 
