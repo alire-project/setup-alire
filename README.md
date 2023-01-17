@@ -2,7 +2,7 @@
 
 GitHub action to setup Alire, the Ada/SPARK package manager.
 
-Version v2 adds caching to speed-up deployment, particularly on Windows.
+Version v2 adds caching to speed up deployment, particularly on Windows.
 
 ## Usage
 

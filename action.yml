@@ -20,7 +20,7 @@ inputs:
     required: false
     default: ''
   cache:
-    description: Whether to reuse a cached previous install. Only works for stable releases.
+    description: Whether to reuse a cached previous install. Only works for stable releases with toolchain at default location.
     required: false
     default: true
 
@@ -31,7 +31,7 @@ runs:
 
     # We don't cache branch builds for now, as this would require to check the head commit
     - name: Reuse cached installation
-      if: ${{ inputs.branch == '' && inputs.version != 'nightly' && inputs.cache }}
+      if: ${{ inputs.cache && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
       id: cache-alr
       uses: actions/cache@v3
       with:
