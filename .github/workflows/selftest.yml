@@ -1,0 +1,59 @@
+# Changes to the v2 branch must be proposed via PRs in the branch
+# v2-next. This way we can check the action just as GHA is going to
+# use it.
+
+name: Selftest
+
+on: pull_request
+
+jobs:
+  setup-alire:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        target: [stable, nightly, source]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check on proper branch
+        if: github.head_ref != 'v2-next'
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed(`PRs for latest-stable must come from v2-next, but branch is ${{ github.head_ref }}`)
+
+      - name: Setup stable
+        uses: alire-project/setup-alire@v2-next
+        if: matrix.target == 'stable'
+
+      - name: Setup nightly
+        uses: alire-project/setup-alire@v2-next
+        if: matrix.target == 'nightly'
+        with:
+          version: nightly
+
+      - uses: ada-actions/toolchain@ce2020
+        if: matrix.target == 'source'
+        with:
+          distrib: community
+
+      - name: Setup from source
+        uses: alire-project/setup-alire@v2-next
+        if: matrix.target == 'source'
+        with:
+          branch: master
+
+      # Verify proper builds
+
+      - run: alr -n version | grep "os:" | grep LINUX
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+
+      - run: alr -n version | grep "os:" | grep MACOS
+        if: matrix.os == 'macos-latest'
+        shell: bash
+
+      - run: alr -n version | grep "os:" | grep WINDOWS
+        if: matrix.os == 'windows-latest'
+        shell: bash

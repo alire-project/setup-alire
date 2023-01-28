@@ -17,12 +17,28 @@ async function install_branch(branch : string) {
         process.chdir(install_dir);
         await exec.exec(`git submodule update --init --recursive`);
 
-        if (process.platform == "darwin") {
-            process.env.OS = "macOS"
-            console.log("NOTE: Configuring ENV for macOS")
-        } else {
-            console.log("NOTE: Configuring ENV for Linux/Windows")
-        }
+        switch (process.platform) {
+            case "darwin":
+                console.log("NOTE: Configuring ENV for macOS");
+                process.env.ALIRE_OS = "macos"
+                break;
+            case "win32":
+                console.log("NOTE: Configuring ENV for Windows");
+                process.env.ALIRE_OS = "windows"
+                break;
+            case "linux":
+                console.log("NOTE: Configuring ENV for Linux");
+                process.env.ALIRE_OS = "linux"
+                break;
+            case "freebsd":
+                console.log("NOTE: Configuring ENV for FreeBSD");
+                process.env.ALIRE_OS = "freebsd"
+                break;
+            default:
+                console.log("NOTE: Unknown platform: build will fail");
+                process.env.ALIRE_OS = "unknown"
+                break;
+        }   
 
         await exec.exec(`gprbuild -j0 -p -P alr_env.gpr -cargs -fPIC`);
 
