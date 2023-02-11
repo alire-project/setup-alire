@@ -37,12 +37,12 @@ runs:
       id: find-hash
       shell: bash
       run: |
-        if [ "${{ inputs.branch }}" != "" ]; then
-          echo "hash=(git ls-remote --heads https://github.com/alire-project/alire ${{ inputs.branch }} | cut -f1)" >> $GITHUB_OUTPUT
-        elsif [ "${{ inputs.version }}" != "nightly" ]; then
-          echo "hash=(git ls-remote --tags https://github.com/alire-project/alire v${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+        if [[ "${{ inputs.branch }}" != "" ]]; then
+          echo "hash=$(git ls-remote --heads https://github.com/alire-project/alire ${{ inputs.branch }} | cut -f1)" >> $GITHUB_OUTPUT
+        elif [[ "${{ inputs.version }}" != "nightly" ]]; then
+          echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire v${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
         else
-          echo "hash=(git ls-remote --tags https://github.com/alire-project/alire ${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+          echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire ${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
         fi
 
     - name: Reuse cached installation
