@@ -8,12 +8,24 @@ import path from "path";
 
 const install_dir : string = "alire_install";
 
+function detect_cached() : boolean {
+    const ext = (process.platform == "win32" ? ".exe" : "")
+    if (fs.existsSync(path.join(process.cwd(), install_dir, "bin", `alr${ext}`))) {
+        console.log("CACHE HIT")
+        return true
+    } else {
+        console.log("CACHE MISS")
+        return false
+    }
+}
+
 async function install_branch(branch : string) {
     const repo_url  : string = "https://github.com/alire-project/alire.git";
 
     console.log(`Builing alr from branch [${branch}]`)
 
     await exec.exec(`git clone -b ${branch} ${repo_url} ${install_dir}`);
+        const start_path : string = process.cwd()
         process.chdir(install_dir);
         await exec.exec(`git submodule update --init --recursive`);
 
@@ -41,11 +53,10 @@ async function install_branch(branch : string) {
         }   
 
         await exec.exec(`gprbuild -j0 -p -P alr_env.gpr -cargs -fPIC`);
-
-        core.addPath(path.join(process.cwd(), 'bin'));
+        process.chdir(start_path)
 }
 
-async function install_release(version : string) : Promise<boolean> { // Return if it was cached
+async function install_release(version : string) {
     const base_url : string = "https://github.com/alire-project/alire/releases/download";
 
     console.log(`Deploying alr version [${version}]`)
@@ -81,15 +92,6 @@ async function install_release(version : string) : Promise<boolean> { // Return 
     const filename : string = `alr-${version}-${infix}-${platform}.zip`
     const url : string = `${base_url}/${v}${version}/${filename}`;
 
-    //  Add to path in any case
-    core.addPath(path.join(process.cwd(), install_dir, 'bin'));
-
-    // Check if this install is cached
-    if (fs.existsSync(path.join(process.cwd(), install_dir, 'LICENSE.txt'))) {
-        console.log(`CACHE HIT: reusing installation of ${filename}`)
-        return true
-    }
-
     console.log(`Downloading file: ${url} to ${install_dir}`)
     const dlFile = await tc.downloadTool(url);
     await tc.extractZip(dlFile, install_dir);
@@ -118,15 +120,20 @@ async function run() {
             tool_dir  = core.getInput('toolchain_dir');
         }
 
-        // Install the requested version/branch
-        var cached : boolean
-        if (branch.length == 0) {
-            cached = await install_release(version);
+        // Install the requested version/branch unless cached
+        const cached : boolean = detect_cached()
+
+        if (!cached) {
+            if (branch.length == 0) {
+                await install_release(version);
+            }
+            else {
+                await install_branch(branch);
+            }
         }
-        else {
-            await install_branch(branch);
-            cached = false
-        }
+
+        //  Add to path in any case
+        core.addPath(path.join(process.cwd(), install_dir, 'bin'));
 
         // And configure the toolchain
         if (tool_args.length > 0 && !cached) {

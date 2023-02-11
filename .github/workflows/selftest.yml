@@ -42,7 +42,6 @@ jobs:
         if: matrix.target == 'source'
         with:
           distrib: community
-          cache: false
 
       - name: Setup from source
         uses: alire-project/setup-alire@v2-next

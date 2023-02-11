@@ -7,6 +7,7 @@ inputs:
     description: Use this argument to install a stable or nightly release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0, or 'nightly'. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
     required: false
     default: '1.2.2'
+    # Also to be updated in test-cache-yml
   branch:
     description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
     required: false
@@ -20,7 +21,7 @@ inputs:
     required: false
     default: ''
   cache:
-    description: Whether to reuse a cached previous install. Only works for stable releases with toolchain at default location.
+    description: Whether to reuse a cached previous install.
     required: false
     default: true
 
@@ -33,9 +34,20 @@ runs:
   using: "composite"
   steps:
 
-    # We don't cache branch builds for now, as this would require to check the head commit
+    - name: Identify hash from which alr was built
+      id: find-hash
+      shell: bash
+      run: |
+        if [[ "${{ inputs.branch }}" != "" ]]; then
+          echo "hash=$(git ls-remote --heads https://github.com/alire-project/alire ${{ inputs.branch }} | cut -f1)" >> $GITHUB_OUTPUT
+        elif [[ "${{ inputs.version }}" != "nightly" ]]; then
+          echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire v${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+        else
+          echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire ${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+        fi
+
     - name: Reuse cached installation
-      if: ${{ inputs.cache == 'true' && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' }}
       id: cache-alr
       uses: actions/cache/restore@v3
       with:
@@ -43,7 +55,7 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
-        key: alr[${{ inputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}]
+        key: alr[${{ inputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
@@ -51,7 +63,7 @@ runs:
     - name: Check cache output
       shell: bash
       run: |
-        echo Cache hit result: ${{ steps.cache-alr.outputs.cache-hit }}
+        echo Cache hit result: [${{ steps.cache-alr.outputs.cache-hit }}] cache-id: ${{ steps.find-hash.outputs.hash }}
 
     # To run the old setup action which is javascript
     - name: Setup Node
@@ -75,7 +87,7 @@ runs:
     # Save cache early so we can verify its proper working in a test workflow. Otherwise
     # it's not saved until workflow completion and by then it's too late.
     - name: Cache install
-      if: ${{ inputs.cache == 'true' && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' }}
       uses: actions/cache/save@v3
       with:
         path: |

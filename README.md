@@ -53,7 +53,7 @@ inputs:
     required: false
     default: ''
   cache:
-    description: Whether to reuse a cached previous install. Only works for stable releases.
+    description: Whether to reuse a cached previous install.
     required: false
     default: true
 ```
