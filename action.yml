@@ -24,6 +24,11 @@ inputs:
     required: false
     default: true
 
+outputs:
+  cache_hit:
+    description: Whether a cached installation was reused
+    value: ${{ steps.cache-alr.outputs.cache-hit }}
+
 runs:
   using: "composite"
   steps:
@@ -33,7 +38,7 @@ runs:
     - name: Reuse cached installation
       if: ${{ inputs.cache && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
       id: cache-alr
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
         path: |
           ~/.cache/alire
@@ -43,6 +48,11 @@ runs:
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
+
+    - name: Check cache output
+      shell: bash
+      run: |
+        echo Cache hit result: ${{ steps.cache-alr.outputs.cache-hit }}
 
     # To run the old setup action which is javascript
     - name: Setup Node
@@ -60,3 +70,15 @@ runs:
       run: |
         which alr
         alr --version
+
+    # Save cache early so we can verify its proper working in a test workflow. Otherwise
+    # it's not saved until workflow completion and by then it's too late.
+    - name: Cache install
+      if: ${{ inputs.cache && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ~/.cache/alire
+          ~/.config/alire
+          ./alire_install
+        key: ${{ steps.cache-alr.outputs.cache-primary-key }}
