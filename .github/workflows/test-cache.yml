@@ -68,3 +68,17 @@ jobs:
               core.setFailed('FAIL: No cache hit observed')
 
       - run: alr -n version
+
+      # Verify proper builds
+
+      - run: alr -n version | grep "os:" | grep LINUX
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+
+      - run: alr -n version | grep "os:" | grep MACOS
+        if: matrix.os == 'macos-latest'
+        shell: bash
+
+      - run: alr -n version | grep "os:" | grep WINDOWS
+        if: matrix.os == 'windows-latest'
+        shell: bash
