@@ -38,11 +38,6 @@ jobs:
           version: nightly
           cache: false
 
-      - uses: ada-actions/toolchain@ce2020
-        if: matrix.target == 'source'
-        with:
-          distrib: community
-
       - name: Setup from source
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'source'

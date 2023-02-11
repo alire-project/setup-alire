@@ -32,11 +32,6 @@ jobs:
           script: |
             core.setFailed(`PRs for ${{github.base_ref}} must come from v2-next, but branch is ${{github.head_ref || github.ref}}`)
 
-      - uses: ada-actions/toolchain@ce2020
-        if: matrix.branch == 'master'
-        with:
-          distrib: community
-
       # This might hit cache
 
       - name: Check action itself

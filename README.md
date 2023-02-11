@@ -19,18 +19,18 @@ To use a precompiled nightly build of the development version, use the following
 ```
 
 To use a development version compiled from sources (if you known what
-you are doing), add instead these two steps to you workflow:
+you are doing), use the following:
 ```yaml
-    - uses: ada-actions/toolchain@ce2020
-    - uses: alire-project/setup-alire@v1
+    - uses: alire-project/setup-alire@v2
       with:
         branch: "master" # or the branch you want to use
 ```
-The first step, in this case, is done to have a GNAT toolchain available to
-compile Alire. If you already are setting up GNAT for your needs, this step can
-be omitted.
 
-The command line tool `alr` will be available in `PATH`.
+For building from sources, the action will detect whether a GNAT is already in
+the PATH. If not, one will be installed to be able to build `alr`.
+
+The command-line tool `alr` will be available in `PATH` after the action
+completes.
 
 More generally, these options are available for the action:
 
@@ -39,7 +39,7 @@ inputs:
   version:
     description: Use this argument to install a stable release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
     required: false
-    default: '1.1.0'
+    default: '1.2.2'
   branch:
     description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
     required: false
