@@ -26,23 +26,30 @@ jobs:
       - name: Setup stable
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'stable'
+        with:
+          cache: false 
+          # We test without cache, as caching is tested in a separate workflow.
+          # This way we make sure the cache isn't hiding any issue.
 
       - name: Setup nightly
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'nightly'
         with:
           version: nightly
+          cache: false
 
       - uses: ada-actions/toolchain@ce2020
         if: matrix.target == 'source'
         with:
           distrib: community
+          cache: false
 
       - name: Setup from source
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'source'
         with:
           branch: master
+          cache: false
 
       # Verify proper builds
 

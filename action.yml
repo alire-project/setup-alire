@@ -32,11 +32,10 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
 
     # We don't cache branch builds for now, as this would require to check the head commit
     - name: Reuse cached installation
-      if: ${{ inputs.cache && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
       id: cache-alr
       uses: actions/cache/restore@v3
       with:
@@ -62,8 +61,10 @@ runs:
 
     # Install alr. If found cached it will return without reinstalling (but setting PATH).
     # We forward inputs as they're bugged for JS in composite actions.
-    - run: node lib/main.js '${{ toJSON(inputs) }}'
+
+    - run: node $(echo "${{ github.action_path }}/lib/main.js" | sed 's/\\/\//g') '${{ toJSON(inputs) }}'
       shell: bash
+      # on Windows, backlashes mess things for bash, and powershell chokes on toJSON output
 
     # Display result for the record
     - shell: bash
@@ -74,7 +75,7 @@ runs:
     # Save cache early so we can verify its proper working in a test workflow. Otherwise
     # it's not saved until workflow completion and by then it's too late.
     - name: Cache install
-      if: ${{ inputs.cache && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' && inputs.branch == '' && inputs.version != 'nightly' && inputs.toolchain_dir == '' }}
       uses: actions/cache/save@v3
       with:
         path: |
