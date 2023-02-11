@@ -21,7 +21,7 @@ To use a precompiled nightly build of the development version, use the following
 To use a development version compiled from sources (if you known what
 you are doing), use the following:
 ```yaml
-    - uses: alire-project/setup-alire@v1
+    - uses: alire-project/setup-alire@v2
       with:
         branch: "master" # or the branch you want to use
 ```

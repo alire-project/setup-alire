@@ -71,9 +71,9 @@ runs:
       id: find-gnat
       run: gnat --version && echo "available=true" >> $GITHUB_OUTPUT || echo "available=false" >> $GITHUB_OUTPUT
 
-    # Setup a GNAT if necessary
+    # Setup a GNAT if necessary to build from branch
     - name: Install GNAT
-      if: steps.find-gnat.outputs.available != "true"
+      if: inputs.branch != '' && steps.find-gnat.outputs.available != 'true' && steps.cache-alr.outputs.cache-hit != 'true'
       uses: ada-actions/toolchain@ce2020
       with:
         distrib: community
