@@ -74,9 +74,9 @@ runs:
     # Setup a GNAT if necessary to build from branch
     - name: Install GNAT
       if: inputs.branch != '' && steps.find-gnat.outputs.available != 'true' && steps.cache-alr.outputs.cache-hit != 'true'
-      uses: ada-actions/toolchain@ce2020
+      uses: alire-project/alr-install@v1
       with:
-        distrib: community
+        crates: gnat_native gprbuild
 
     # To run the old setup action which is javascript
     - name: Setup Node
