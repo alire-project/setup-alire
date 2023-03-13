@@ -71,7 +71,8 @@ runs:
       id: find-gnat
       run: gnat --version && echo "available=true" >> $GITHUB_OUTPUT || echo "available=false" >> $GITHUB_OUTPUT
 
-    # Setup a GNAT if necessary to build from branch
+    # Setup a GNAT if necessary to build from branch.
+    # We cannot use alr-install or setup-alire, as that creates infinite recursion.
     - name: Install GNAT
       if: inputs.branch != '' && steps.find-gnat.outputs.available != 'true' && steps.cache-alr.outputs.cache-hit != 'true'
       uses: ada-actions/toolchain@ce2020
@@ -99,8 +100,9 @@ runs:
 
     # Save cache early so we can verify its proper working in a test workflow. Otherwise
     # it's not saved until workflow completion and by then it's too late.
+    # When cache was hit, attempting to save will fail and emit a warning, so avoid it.
     - name: Cache install
-      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' && steps.cache-alr.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v3
       with:
         path: |
