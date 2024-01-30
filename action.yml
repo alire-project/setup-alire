@@ -35,16 +35,26 @@ runs:
   steps:
 
     - name: Identify hash from which alr was built
+      # Identifies the version and hash to be used for the cache key
       id: find-hash
       shell: bash
       run: |
         if [[ "${{ inputs.branch }}" != "" ]]; then
           echo "hash=$(git ls-remote --heads https://github.com/alire-project/alire ${{ inputs.branch }} | cut -f1)" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.branch }}" >> $GITHUB_OUTPUT
         elif [[ "${{ inputs.version }}" != "nightly" ]]; then
           echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire v${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
         else
           echo "hash=$(git ls-remote --tags https://github.com/alire-project/alire ${{ inputs.version }} | cut -f1)" >> $GITHUB_OUTPUT
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
         fi
+
+    - name: Print cache key
+      id: cache-key
+      shell: bash
+      run: |
+        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
 
     - name: Reuse cached installation
       if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' }}
@@ -55,7 +65,7 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
-        key: alr[${{ inputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]
+        key: ${{steps.cache-key.outputs.key}}
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
@@ -63,7 +73,7 @@ runs:
     - name: Check cache output
       shell: bash
       run: |
-        echo Cache hit result: [${{ steps.cache-alr.outputs.cache-hit }}] cache-id: ${{ steps.find-hash.outputs.hash }}
+        echo Cache hit result: [${{steps.cache-alr.outputs.cache-hit}}] cache-key: ${{steps.cache-key.outputs.key}}
 
     # Ascertain if we need to install a toolchain for building from sources
     - name: Find GNAT

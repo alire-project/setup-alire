@@ -27,7 +27,7 @@ jobs:
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'stable'
         with:
-          cache: false 
+          cache: false
           # We test without cache, as caching is tested in a separate workflow.
           # This way we make sure the cache isn't hiding any issue.
 
@@ -38,7 +38,7 @@ jobs:
           version: nightly
           cache: false
 
-      - name: Setup from source
+      - name: Setup from source (master)
         uses: alire-project/setup-alire@v2-next
         if: matrix.target == 'source'
         with:
