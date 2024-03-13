@@ -39,7 +39,7 @@ inputs:
   version:
     description: Use this argument to install a stable release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
     required: false
-    default: '1.2.2'
+    default: '2.0.0'
   branch:
     description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
     required: false

@@ -17,14 +17,14 @@ jobs:
 
     steps:
       - name: Check on proper branch
-        if: github.head_ref != 'v2-next'
+        if: github.head_ref != 'v3-next'
         uses: actions/github-script@v3
         with:
           script: |
             core.setFailed(`PRs for latest-stable must come from v2-next, but branch is ${{ github.head_ref }}`)
 
       - name: Setup stable
-        uses: alire-project/setup-alire@v2-next
+        uses: alire-project/setup-alire@v3-next
         if: matrix.target == 'stable'
         with:
           cache: false
@@ -32,14 +32,14 @@ jobs:
           # This way we make sure the cache isn't hiding any issue.
 
       - name: Setup nightly
-        uses: alire-project/setup-alire@v2-next
+        uses: alire-project/setup-alire@v3-next
         if: matrix.target == 'nightly'
         with:
           version: nightly
           cache: false
 
       - name: Setup from source (master)
-        uses: alire-project/setup-alire@v2-next
+        uses: alire-project/setup-alire@v3-next
         if: matrix.target == 'source'
         with:
           branch: master
