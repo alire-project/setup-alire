@@ -50,7 +50,7 @@ async function install_branch(branch : string) {
                 console.log("NOTE: Unknown platform: build will fail");
                 process.env.ALIRE_OS = "unknown"
                 break;
-        }   
+        }
 
         await exec.exec(`gprbuild -j0 -p -P alr_env.gpr -cargs -fPIC`);
         process.chdir(start_path)
@@ -104,20 +104,17 @@ async function run() {
         var version : string
         var branch  : string
         var tool_args : string
-        var tool_dir  : string
 
         if (process.argv[2]) { // e.g., node lib/script.js <json object>
             const inputs = JSON.parse(process.argv[2])
             version   = inputs.version
             branch    = inputs.branch
             tool_args = inputs.toolchain
-            tool_dir  = inputs.toolchain_dir
         } else {
             // Old way in case this is fixed by GH
             version   = core.getInput('version');
             branch    = core.getInput('branch');
             tool_args = core.getInput('toolchain');
-            tool_dir  = core.getInput('toolchain_dir');
         }
 
         // Install the requested version/branch unless cached
@@ -137,14 +134,10 @@ async function run() {
 
         // And configure the toolchain
         if (tool_args.length > 0 && !cached) {
-            if (tool_dir.length == 0) {
-                await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} ${tool_args}`);
-                // Disable the assistant anyway if we have selected something. This will no longer be necessary after 1.1.1
-                if (tool_args != "--disable-assistant") {
-                    await exec.exec(`alr -n toolchain --disable-assistant`);
-                }
-            } else {
-                await exec.exec(`alr -n toolchain --install ${tool_args} --install-dir ${tool_dir}`);
+            await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} ${tool_args}`);
+            // Disable the assistant anyway if we have selected something. This will no longer be necessary after 1.1.1
+            if (tool_args != "--disable-assistant") {
+                await exec.exec(`alr -n toolchain --disable-assistant`);
             }
         }
 
