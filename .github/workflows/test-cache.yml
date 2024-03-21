@@ -1,5 +1,5 @@
 # Changes to the v2 branch must be proposed via PRs in the branch
-# v2-next. This way we can check the action just as GHA is going to
+# v3-next. This way we can check the action just as GHA is going to
 # use it.
 
 name: Test cache
@@ -12,44 +12,44 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: ['1.2.2', 'nightly', 'source']
-        branch: ['', 'master']
-        exclude: # These combos are redundant
+        config:
+          - version: '2.0.1'
+            branch:  ''
           - version: '1.2.2'
-            branch: master
-          - version: nightly
-            branch: master
-          - version: source
-            branch: ''
+            branch:  ''
+          - version: 'nightly'
+            branch:  ''
+          - version: ''
+            branch:  'master'
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Check PR comes from proper branch
-        if: (github.head_ref || github.ref) != 'v2-next'
+        if: (github.head_ref || github.ref) != 'v3-next'
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed(`PRs for ${{github.base_ref}} must come from v2-next, but branch is ${{github.head_ref || github.ref}}`)
+            core.setFailed(`PRs for ${{github.base_ref}} must come from v3-next, but branch is ${{github.head_ref || github.ref}}`)
 
       # This might hit cache
 
       - name: Check action itself
         id: attempt_1
-        uses: alire-project/setup-alire@v2-next
+        uses: alire-project/setup-alire@v3-next
         with:
-          version: ${{matrix.version}}
-          branch: ${{matrix.branch}}
+          version: ${{matrix.config.version}}
+          branch: ${{matrix.config.branch}}
 
       # Next attemp should hit cache given the previous run
 
       - name: Check action itself
         if: steps.attempt_1.outputs.cache_hit != 'true'
         id: attempt_2
-        uses: alire-project/setup-alire@v2-next
+        uses: alire-project/setup-alire@v3-next
         with:
-          version: ${{matrix.version}}
-          branch: ${{matrix.branch}}
+          version: ${{matrix.config.version}}
+          branch: ${{matrix.config.branch}}
 
       - shell: bash
         run: |
