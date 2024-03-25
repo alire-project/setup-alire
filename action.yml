@@ -6,16 +6,20 @@ inputs:
   version:
     description: Use this argument to install a stable or nightly release. Use a version number without v prefix, e.g., 1.0.1, 1.1.0, or 'nightly'. This argument will be ignored if a branch argument is supplied. Defaults to the latest stable release.
     required: false
-    default: '2.0.1'
+    default: '1.2.2'
     # Also to be updated in test-cache-yml
   branch:
-    description: Use this argument to install a development branch (e.g., master).
+    description: Use this argument to install a development branch (e.g., master). Using this option will require a preexisting compiler in the workflow environment.
     required: false
     default: ''
   toolchain:
     description: Arguments to pass to `alr toolchain` after setup.
     required: false
     default: 'gnat_native gprbuild'
+  toolchain_dir:
+    description: Location to install toolchain under.
+    required: false
+    default: ''
   cache:
     description: Whether to reuse a cached previous install.
     required: false
@@ -77,63 +81,13 @@ runs:
       id: find-gnat
       run: gnat --version && echo "available=true" >> $GITHUB_OUTPUT || echo "available=false" >> $GITHUB_OUTPUT
 
-    # Setup a GNAT if necessary to build from branch. We cannot use alr-install
-    # as that creates infinite recursion. Rather than relying on the old action
-    # that sets up CE editions, we simply fetch a stable alr capable of running
-    # `alr install`, and we use that to install the latest FSF GNAT.
-
-    # BEGIN TOOLCHAIN INSTALLATION
-
-    - name: Identify need for GNAT
+    # Setup a GNAT if necessary to build from branch.
+    # We cannot use alr-install or setup-alire, as that creates infinite recursion.
+    - name: Install GNAT
       if: inputs.branch != '' && steps.find-gnat.outputs.available != 'true' && steps.cache-alr.outputs.cache-hit != 'true'
-      id: need-GNAT
-      shell: bash
-      run: echo "need=true" >> $GITHUB_OUTPUT
-
-    - name: Install GNAT (I) Linux
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Linux'
-      uses: engineerd/configurator@v0.0.10
+      uses: ada-actions/toolchain@ce2020
       with:
-        name: alr
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-linux.zip
-        pathInArchive: bin/alr
-    - name: Install GNAT (I) macOS
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'macOS'
-      uses: engineerd/configurator@v0.0.10
-      with:
-        name: alr
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-macos.zip
-        pathInArchive: bin/alr
-    - name: Install GNAT (I) Windows
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Windows'
-      uses: engineerd/configurator@v0.0.10
-      with:
-        name: alr.exe
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-windows.zip
-        pathInArchive: bin/alr.exe
-
-    - name: Install GNAT (II)
-      if: steps.need-GNAT.outputs.need == 'true'
-      shell: bash
-      run: |
-        alr install gnat_native gprbuild --prefix=$PWD/setup_alire_prefix
-        echo REMOVAL TARGET: $(which alr)
-        rm -f $(which alr)* && echo REMOVED stable alr used for toolchain install
-
-    - name: Install GNAT (III) - Add to path (Windows)
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        $Target = Resolve-Path .\setup_alire_prefix\bin
-        Add-Content $env:GITHUB_PATH $Target
-
-    - name: Install GNAT (III) - Add to path (!Windows)
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os != 'Windows'
-      shell: bash
-      run: |
-        readlink -f "$PWD/setup_alire_prefix/bin" >> $GITHUB_PATH
-
-    # END TOOLCHAIN INSTALLATION
+        distrib: community
 
     # To run the old setup action which is javascript
     - name: Setup Node
@@ -147,14 +101,6 @@ runs:
     - run: node $(echo "${{ github.action_path }}/lib/main.js" | sed 's/\\/\//g') '${{ toJSON(inputs) }}'
       shell: bash
       # on Windows, backlashes mess things for bash, and powershell chokes on toJSON output
-
-    # Remove our installed toolchain as not to interfere with other
-    # actions/workflows down the line
-    - name: Remove GNAT (IV)
-      if: steps.need-GNAT.outputs.need == 'true'
-      shell: bash
-      run: |
-        rm -rf setup_alire_prefix && echo REMOVED toolchain used to build alr
 
     # Display result for the record
     - shell: bash
