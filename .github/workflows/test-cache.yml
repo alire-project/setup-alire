@@ -63,10 +63,13 @@ jobs:
           script: |
               core.setFailed('FAIL: No cache hit observed')
 
-      # Check alr and toolchains
+      # Check alr and default toolchains
       - run: alr -n version
-      - run: gnat --version
-      - run: gprbuild --version
+      - run: |
+          alr -n init --bin alrws
+          cd alrws
+          alr exec -- gnat --version
+          alr exec -- gprbuild --version
 
       # Verify proper builds
 
