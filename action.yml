@@ -173,4 +173,8 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
+          ~/AppData/Local/alire
         key: ${{ steps.cache-alr.outputs.cache-primary-key }}
+        # Note that '~' is recommended on Windows too:
+        # https://github.com/actions/cache
+
