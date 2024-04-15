@@ -10,6 +10,7 @@ on:
 jobs:
   sanity-check:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         config:
@@ -62,7 +63,13 @@ jobs:
           script: |
               core.setFailed('FAIL: No cache hit observed')
 
+      # Check alr and default toolchains
       - run: alr -n version
+      - run: |
+          alr -n init --bin alrws
+          cd alrws
+          alr exec -- gnat --version
+          alr exec -- gprbuild --version
 
       # Verify proper builds
 

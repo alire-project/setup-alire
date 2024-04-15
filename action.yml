@@ -61,10 +61,13 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
+          ~/AppData/Local/alire
         key: ${{steps.cache-key.outputs.key}}
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
+        # ~/AppData is used with Alire 2.0 onwards
+        # Note that '~' is recommended on Windows too: https://github.com/actions/cache
 
     - name: Check cache output
       shell: bash
@@ -173,4 +176,7 @@ runs:
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
+          ~/AppData/Local/alire
         key: ${{ steps.cache-alr.outputs.cache-primary-key }}
+        # Note that '~' is recommended on Windows too: https://github.com/actions/cache
+
