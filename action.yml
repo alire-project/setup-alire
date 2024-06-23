@@ -159,11 +159,12 @@ runs:
       run: |
         rm -rf setup_alire_prefix && echo REMOVED toolchain used to build alr
 
-    # Display result for the record
+    # Display result for the record, and do some housekeeping
     - shell: bash
       run: |
         which alr
         alr --version
+        { alr index --update-all >/dev/null && echo "Index refreshed"; } || echo "Index refresh failed"
 
     # Save cache early so we can verify its proper working in a test workflow. Otherwise
     # it's not saved until workflow completion and by then it's too late.

@@ -132,6 +132,14 @@ async function run() {
         //  Add to path in any case
         core.addPath(path.join(process.cwd(), install_dir, 'bin'));
 
+        //  Disable index auto-refresh asking, that may cause trouble to users
+        //  on first run, but only if the major version is >=2, which
+        //  introduced the feature.
+        if (parseInt(version.split(".")[0], 10) >= 2) {
+            await exec.exec(`alr -n settings --global --set index.auto_update_asked true`);
+            console.log("Enabled index auto-refresh without further asking.");
+        }
+
         // And configure the toolchain
         if (tool_args.length > 0 && !cached) {
             await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} ${tool_args}`);
