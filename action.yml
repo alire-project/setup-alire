@@ -156,7 +156,7 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 20
 
     # Install alr. If found cached it will return without reinstalling (but setting PATH).
     # We forward inputs as they're bugged for JS in composite actions.
