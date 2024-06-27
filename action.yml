@@ -50,8 +50,8 @@ runs:
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}][f]" >> $GITHUB_OUTPUT
-      # The last value in square brackets is to make the key unique for debugging
+        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
+      # The first value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
       if: ${{ inputs.cache == 'true' }}
@@ -154,7 +154,7 @@ runs:
 
     # To run the old setup action which is javascript
     - name: Setup Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 20
 
@@ -179,6 +179,14 @@ runs:
         which alr
         alr --version
         { alr index --update-all >/dev/null && echo "Index refreshed"; } || echo "Index refresh failed"
+
+    # Report GNAT version if available (might be deselected with `toolchain` argument)
+    - shell: bash
+      run: |
+        alr -n -q init --bin find_gnat >/dev/null && cd find_gnat
+        echo "Using gnat: $(alr exec -- which gnat)" || true
+        echo "$(alr exec -- gnat --version)" || true
+        cd ../find_gnat/.. && rm -rf find_gnat
 
     # Save cache early so we can verify its proper working in a test workflow. Otherwise
     # it's not saved until workflow completion and by then it's too late.
