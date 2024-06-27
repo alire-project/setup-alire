@@ -1,0 +1,72 @@
+# Test minimal save/restore of a cache
+
+name: Minimal cache test
+
+on:
+  push:
+    branches:
+      - disabled
+
+jobs:
+  minimal-cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create fake data
+        run: |
+          mkdir data1
+          mkdir data2
+          touch data1/thedata.txt
+          touch data2/thedata.txt
+
+      - name: Create unique key
+        id: cache-key
+        run: |
+          echo "key=cache test $(date -u)" >> $GITHUB_OUTPUT
+
+      - name: Verify cache miss
+        id: miss
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data1
+            data2
+          key: ${{ steps.cache-key.outputs.key }}
+          lookup-only: true
+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data1
+            data2
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Query cache hit 1
+        id: hit1
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data1
+            data2
+          key: ${{ steps.cache-key.outputs.key }}
+          fail-on-cache-miss: false
+          lookup-only: true
+
+      # NOTE inverted path order
+      - name: Query cache hit 2
+        id: hit2
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data2
+            data1
+          key: ${{ steps.cache-key.outputs.key }}
+          fail-on-cache-miss: false
+          lookup-only: true
+
+      - name: Print both cache hit and miss
+        run: |
+          echo "Cache miss? ${{ steps.miss.outputs.cache-hit }}"
+          echo "Cache hit 1? ${{ steps.hit1.outputs.cache-hit }}"
+          echo "Cache hit 2? ${{ steps.hit2.outputs.cache-hit }}"
