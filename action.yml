@@ -46,27 +46,29 @@ runs:
           echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Print cache key
+    - name: Generate cache key
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
+        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}][c]" >> $GITHUB_OUTPUT
+      # The last value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
-      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' }}
+      if: ${{ inputs.cache == 'true' }}
       id: cache-alr
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: |
           ~/.cache/alire
           ~/.config/alire
           ./alire_install
+          ~/.local/share/alire
           ~/AppData/Local/alire
         key: ${{steps.cache-key.outputs.key}}
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
-        # ~/AppData is used with Alire 2.0 onwards
+        # ~/AppData and ./local/share/alire is used with Alire 2.0 onwards
         # Note that '~' is recommended on Windows too: https://github.com/actions/cache
 
     - name: Check cache output
@@ -170,14 +172,26 @@ runs:
     # it's not saved until workflow completion and by then it's too late.
     # When cache was hit, attempting to save will fail and emit a warning, so avoid it.
     - name: Cache install
-      if: ${{ inputs.cache == 'true' && inputs.toolchain_dir == '' && steps.cache-alr.outputs.cache-hit != 'true' }}
-      uses: actions/cache/save@v3
+      if: ${{ inputs.cache == 'true' && steps.cache-alr.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v4
       with:
         path: |
           ~/.cache/alire
           ~/.config/alire
+          ~/.local/share/alire
           ./alire_install
           ~/AppData/Local/alire
         key: ${{ steps.cache-alr.outputs.cache-primary-key }}
-        # Note that '~' is recommended on Windows too: https://github.com/actions/cache
+        # Note that '~' is recommended on Windows too:
+        # https://github.com/actions/cache
+
+    # Verify cache was saved properly
+    - name: Cache verify
+      if: ${{ inputs.cache == 'true' && steps.cache-alr.outputs.cache-hit != 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: unused # Forced to provide it
+        key: ${{steps.cache-key.outputs.key}}
+        lookup-only: true
+        fail-on-cache-miss: true
 

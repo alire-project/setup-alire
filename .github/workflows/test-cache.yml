@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  sanity-check:
+  test-cache:
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +35,7 @@ jobs:
 
       # This might hit cache
 
-      - name: Check action itself
+      - name: Check action itself (attempt 1)
         id: attempt_1
         uses: alire-project/setup-alire@v3-next
         with:
@@ -44,7 +44,7 @@ jobs:
 
       # Next attemp should hit cache given the previous run
 
-      - name: Check action itself
+      - name: Check action itself (attempt 2)
         if: steps.attempt_1.outputs.cache_hit != 'true'
         id: attempt_2
         uses: alire-project/setup-alire@v3-next
@@ -72,7 +72,6 @@ jobs:
           alr exec -- gprbuild --version
 
       # Verify proper builds
-
       - run: alr -n version | grep "os:" | grep LINUX
         if: matrix.os == 'ubuntu-latest'
         shell: bash
