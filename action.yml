@@ -24,7 +24,7 @@ inputs:
 outputs:
   cache_hit:
     description: Whether a cached installation was reused
-    value: ${{ steps.cache-alr.outputs.cache-hit }}
+    value: ${{ steps.cache-output.outputs.cache_hit }}
 
 runs:
   using: "composite"
@@ -50,7 +50,7 @@ runs:
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}][c]" >> $GITHUB_OUTPUT
+        echo "key=alr[${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}][f]" >> $GITHUB_OUTPUT
       # The last value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
@@ -61,20 +61,32 @@ runs:
         path: |
           ~/.cache/alire
           ~/.config/alire
-          ./alire_install
           ~/.local/share/alire
+          ./alire_install
           ~/AppData/Local/alire
-        key: ${{steps.cache-key.outputs.key}}
         # .cache contains msys64 install on Windows
         # .config contains the toolchain at the default location, besides index config
         # ./alire_install contains alr itself
         # ~/AppData and ./local/share/alire is used with Alire 2.0 onwards
         # Note that '~' is recommended on Windows too: https://github.com/actions/cache
+        # THESE MUST BE EXACTLY THE SAME IN SAME ORDER IN ALL CACHE-RELATED STEPS
+        key: ${{steps.cache-key.outputs.key}}
 
     - name: Check cache output
       shell: bash
       run: |
         echo Cache hit result: [${{steps.cache-alr.outputs.cache-hit}}] cache-key: ${{steps.cache-key.outputs.key}}
+
+    # In case of miss, give an explicit 'false' which actions/cache doesn't provide
+    - name: Set cache_hit to false if needed
+      id: cache-output
+      shell: bash
+      run: |
+        if [[ "${{inputs.cache}}" == "true" && "${{steps.cache-alr.outputs.cache-hit}}" == "true" ]]; then
+          echo "cache_hit=true" >> $GITHUB_OUTPUT
+        else
+          echo "cache_hit=false" >> $GITHUB_OUTPUT
+        fi
 
     # Ascertain if we need to install a toolchain for building from sources
     - name: Find GNAT
@@ -181,17 +193,20 @@ runs:
           ~/.local/share/alire
           ./alire_install
           ~/AppData/Local/alire
-        key: ${{ steps.cache-alr.outputs.cache-primary-key }}
-        # Note that '~' is recommended on Windows too:
-        # https://github.com/actions/cache
+        key: ${{ steps.cache-key.outputs.key }}
 
     # Verify cache was saved properly
     - name: Cache verify
       if: ${{ inputs.cache == 'true' && steps.cache-alr.outputs.cache-hit != 'true' }}
       uses: actions/cache/restore@v4
       with:
-        path: unused # Forced to provide it
+        path: |
+          ~/.cache/alire
+          ~/.config/alire
+          ~/.local/share/alire
+          ./alire_install
+          ~/AppData/Local/alire
         key: ${{steps.cache-key.outputs.key}}
         lookup-only: true
-        fail-on-cache-miss: true
+        fail-on-cache-miss: false
 
