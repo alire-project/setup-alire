@@ -31,18 +31,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Check PR comes from proper branch
-        if: (github.head_ref || github.ref) != 'v3-next'
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed(`PRs for ${{github.base_ref}} must come from v3-next, but branch is ${{github.head_ref || github.ref}}`)
+      - name: Checkout
+        uses: actions/checkout@v2
 
       # This might hit cache
 
       - name: Check action itself (attempt 1)
         id: attempt_1
-        uses: alire-project/setup-alire@v3-next
+        uses: ./
         with:
           version: ${{matrix.config.version}}
           branch: ${{matrix.config.branch}}
@@ -52,14 +48,16 @@ jobs:
       - name: Check action itself (attempt 2)
         if: steps.attempt_1.outputs.cache_hit != 'true'
         id: attempt_2
-        uses: alire-project/setup-alire@v3-next
+        uses: ./
         with:
           version: ${{matrix.config.version}}
           branch: ${{matrix.config.branch}}
 
-      - shell: bash
+      - name: Diagnose cache use
+        shell: bash
         run: |
-          echo Caching attempt 1: ${{steps.attempt_1.outputs.cache_hit}} :: Caching attempt 2: ${{steps.attempt_2.outputs.cache_hit}}
+          echo "Caching attempt 1: ${{steps.attempt_1.outputs.cache_hit}}"
+          echo "Caching attempt 2: ${{steps.attempt_2.outputs.cache_hit}}"
 
       # Fail if no cache was hit
       - if: (steps.attempt_1.outputs.cache_hit != 'true') && (steps.attempt_2.outputs.cache_hit != 'true')
