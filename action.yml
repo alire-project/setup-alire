@@ -50,7 +50,7 @@ runs:
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
+        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ runner.arch }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
       # The first value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
