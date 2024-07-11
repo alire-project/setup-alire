@@ -61,15 +61,25 @@ async function install_release(version : string) {
 
     console.log(`Deploying alr version [${version}]`)
 
+    var arch     : string;
     var infix    : string;
     var platform : string;
+
+    switch (process.arch) {
+        case 'arm64':
+            arch = "aarch64";
+            break;
+        default:
+            arch = "x86_64";
+            break;
+    }
 
     switch(version) {
         case '1.0.1':
             infix = "bin";
             break;
         default:
-            infix = "bin-x86_64";
+            infix = `bin-${arch}`;
             break;
     }
 

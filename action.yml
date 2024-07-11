@@ -50,7 +50,7 @@ runs:
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
+        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ runner.arch }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
       # The first value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
@@ -114,12 +114,19 @@ runs:
         name: alr
         url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-linux.zip
         pathInArchive: bin/alr
-    - name: Install GNAT (I) macOS
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'macOS'
+    - name: Install GNAT (I) macOS x86_84
+      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'macOS' && runner.arch == 'X64'
       uses: engineerd/configurator@v0.0.10
       with:
         name: alr
         url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-macos.zip
+        pathInArchive: bin/alr
+    - name: Install GNAT (I) macOS aarch64
+      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'macOS' && runner.arch == 'ARM64'
+      uses: engineerd/configurator@v0.0.10
+      with:
+        name: alr
+        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-aarch64-macos.zip
         pathInArchive: bin/alr
     - name: Install GNAT (I) Windows
       if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Windows'
