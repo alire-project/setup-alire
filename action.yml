@@ -107,8 +107,7 @@ runs:
       shell: bash
       run: echo "need=true" >> $GITHUB_OUTPUT
 
-    # Replace previous three alternatives with a manual download and path
-    # addition
+    # Download a stable alr capable of installing a toolchain
     - name: Install GNAT (I)
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
@@ -120,11 +119,15 @@ runs:
         rm alr-${alr_version}-bin-x86_64-${os_lower}.zip
         echo "$PWD/bin" >> $GITHUB_PATH
 
+    # Perform the actual `alr install` and remove the `alr` just used to avoid
+    # conflicts with the `alr` being built.
+    # TODO: we use gnat^13 because there seems to be some trouble with gnat^14
+    # on macOS. Revisit this when the issue is resolved.
     - name: Install GNAT (II)
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
       run: |
-        alr install gnat_native gprbuild --prefix=$PWD/setup_alire_prefix
+        alr install gnat_native^13 gprbuild^22 --prefix=$PWD/setup_alire_prefix
         echo REMOVAL TARGET: $(which alr)
         rm -f $(which alr)* && echo REMOVED stable alr used for toolchain install
 
@@ -162,7 +165,8 @@ runs:
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
       run: |
-        rm -rf setup_alire_prefix && echo REMOVED toolchain used to build alr
+        rm -rf setup_alire_prefix && \
+        echo REMOVED toolchain used to build alr at $PWD/setup_alire_prefix
 
     # Display result for the record, and do some housekeeping
     - shell: bash
