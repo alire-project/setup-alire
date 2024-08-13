@@ -131,18 +131,13 @@ runs:
         echo REMOVAL TARGET: $(which alr)
         rm -f $(which alr)* && echo REMOVED stable alr used for toolchain install
 
-    - name: Install GNAT (III) - Add to path (Windows)
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        $Target = Resolve-Path .\setup_alire_prefix\bin
-        Add-Content $env:GITHUB_PATH $Target
-
-    - name: Install GNAT (III) - Add to path (!Windows)
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os != 'Windows'
+    - name: Install GNAT (III) - Add to path
+      if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
       run: |
-        readlink -f "$PWD/setup_alire_prefix/bin" >> $GITHUB_PATH
+        path_to_add=$(pwd -W 2>/dev/null || pwd)/setup_alire_prefix/bin
+        echo Adding to PATH: $path_to_add
+        echo "$path_to_add" >> $GITHUB_PATH
 
     # END TOOLCHAIN INSTALLATION
 
