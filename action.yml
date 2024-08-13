@@ -107,33 +107,27 @@ runs:
       shell: bash
       run: echo "need=true" >> $GITHUB_OUTPUT
 
-    - name: Install GNAT (I) Linux
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Linux'
-      uses: engineerd/configurator@v0.0.10
-      with:
-        name: alr
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-linux.zip
-        pathInArchive: bin/alr
-    - name: Install GNAT (I) macOS
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'macOS'
-      uses: engineerd/configurator@v0.0.10
-      with:
-        name: alr
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-macos.zip
-        pathInArchive: bin/alr
-    - name: Install GNAT (I) Windows
-      if: steps.need-GNAT.outputs.need == 'true' && runner.os == 'Windows'
-      uses: engineerd/configurator@v0.0.10
-      with:
-        name: alr.exe
-        url: https://github.com/alire-project/alire/releases/download/v2.0.0/alr-2.0.0-bin-x86_64-windows.zip
-        pathInArchive: bin/alr.exe
+    # Download a stable alr capable of installing a toolchain
+    - name: Install GNAT (I)
+      if: steps.need-GNAT.outputs.need == 'true'
+      shell: bash
+      run: |
+        os_lower=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
+        alr_version=2.0.1
+        curl -L -O https://github.com/alire-project/alire/releases/download/v${alr_version}/alr-${alr_version}-bin-x86_64-${os_lower}.zip
+        unzip alr-${alr_version}-bin-x86_64-${os_lower}.zip
+        rm alr-${alr_version}-bin-x86_64-${os_lower}.zip
+        echo "$PWD/bin" >> $GITHUB_PATH
 
+    # Perform the actual `alr install` and remove the `alr` just used to avoid
+    # conflicts with the `alr` being built.
+    # TODO: we use gnat^13 because there seems to be some trouble with gnat^14
+    # on macOS. Revisit this when the issue is resolved.
     - name: Install GNAT (II)
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
       run: |
-        alr install gnat_native gprbuild --prefix=$PWD/setup_alire_prefix
+        alr install gnat_native^13 gprbuild^22 --prefix=$PWD/setup_alire_prefix
         echo REMOVAL TARGET: $(which alr)
         rm -f $(which alr)* && echo REMOVED stable alr used for toolchain install
 
@@ -171,7 +165,8 @@ runs:
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
       run: |
-        rm -rf setup_alire_prefix && echo REMOVED toolchain used to build alr
+        rm -rf setup_alire_prefix && \
+        echo REMOVED toolchain used to build alr at $PWD/setup_alire_prefix
 
     # Display result for the record, and do some housekeeping
     - shell: bash
