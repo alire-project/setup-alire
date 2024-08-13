@@ -115,9 +115,9 @@ runs:
         os_lower=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
         alr_version=2.0.1
         curl -L -O https://github.com/alire-project/alire/releases/download/v${alr_version}/alr-${alr_version}-bin-x86_64-${os_lower}.zip
-        unzip alr-${alr_version}-bin-x86_64-${os_lower}.zip
+        unzip -o alr-${alr_version}-bin-x86_64-${os_lower}.zip "bin/alr*" -d tmp_alr
         rm alr-${alr_version}-bin-x86_64-${os_lower}.zip
-        echo "$PWD/bin" >> $GITHUB_PATH
+        echo "$(pwd -W 2>/dev/null || pwd)/tmp_alr/bin" >> $GITHUB_PATH
 
     # Perform the actual `alr install` and remove the `alr` just used to avoid
     # conflicts with the `alr` being built.
@@ -129,7 +129,7 @@ runs:
       run: |
         alr install gnat_native^13 gprbuild^22 --prefix=$PWD/setup_alire_prefix
         echo REMOVAL TARGET: $(which alr)
-        rm -f $(which alr)* && echo REMOVED stable alr used for toolchain install
+        rm -rf tmp_alr && echo REMOVED stable alr used for toolchain install
 
     - name: Install GNAT (III) - Add to path
       if: steps.need-GNAT.outputs.need == 'true'
