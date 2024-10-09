@@ -48,10 +48,10 @@ inputs:
     description: Arguments to pass to `alr toolchain` after setup.
     required: false
     default: 'gnat_native gprbuild'
-  toolchain_dir:
-    description: Location to install the toolchain under.
+  msys2:
+    description: Whether to install MSYS2 on Windows. When false, `msys2.do_not_install` will be set to true in alr's settings.
     required: false
-    default: ''
+    default: true
   cache:
     description: Whether to reuse a cached previous install.
     required: false
