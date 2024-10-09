@@ -16,6 +16,10 @@ inputs:
     description: Arguments to pass to `alr toolchain` after setup.
     required: false
     default: 'gnat_native gprbuild'
+  msys2:
+    description: Whether to install MSYS2 on Windows. When false, `msys2.do_not_install` will be set to true in alire's settings.
+    required: false
+    default: true
   cache:
     description: Whether to reuse a cached previous install.
     required: false
@@ -50,7 +54,7 @@ runs:
       id: cache-key
       shell: bash
       run: |
-        echo "key=alr[1][${{ steps.find-hash.outputs.version }}][${{ inputs.toolchain }}][${{ runner.os }}][${{ runner.arch }}][${{ steps.find-hash.outputs.hash }}]" >> $GITHUB_OUTPUT
+        echo "key=alr[1][${{steps.find-hash.outputs.version}}][${{inputs.toolchain}}][msys2=${{inputs.msys2}}][${{runner.os}}][${{runner.arch}}][${{steps.find-hash.outputs.hash}}]" >> $GITHUB_OUTPUT
       # The first value in square brackets is to make the key unique for debugging
 
     - name: Reuse cached installation
@@ -107,7 +111,8 @@ runs:
       shell: bash
       run: echo "need=true" >> $GITHUB_OUTPUT
 
-    # Download a stable alr capable of installing a toolchain
+    # Download a stable alr capable of installing a toolchain. Avoid to install
+    # a msys2 at this point which is not needed and confuses later tests.
     - name: Install GNAT (I)
       if: steps.need-GNAT.outputs.need == 'true'
       shell: bash
@@ -124,6 +129,8 @@ runs:
         unzip -o ${alr_filename} "bin/alr*" -d tmp_alr
         rm ${alr_filename}
         echo "$(pwd -W 2>/dev/null || pwd)/tmp_alr/bin" >> $GITHUB_PATH
+        tmp_alr/bin/alr settings --global --set msys2.do_not_install true || \
+          tmp_alr/bin/alr config --global --set msys2.do_not_install true
 
     # Perform the actual `alr install` and remove the `alr` just used to avoid
     # conflicts with the `alr` being built.

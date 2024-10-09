@@ -113,17 +113,24 @@ async function run() {
     try {
         var version : string
         var branch  : string
+        var msys2   : boolean
         var tool_args : string
 
         if (process.argv[2]) { // e.g., node lib/script.js <json object>
             const inputs = JSON.parse(process.argv[2])
+
+            // Log the inputs for the record
+            console.log("Inputs: " + process.argv[2])
+
             version   = inputs.version
             branch    = inputs.branch
+            msys2     = inputs.msys2 == "true";
             tool_args = inputs.toolchain
         } else {
             // Old way in case this is fixed by GH
             version   = core.getInput('version');
             branch    = core.getInput('branch');
+            msys2     = core.getInput('msys2') == "true";
             tool_args = core.getInput('toolchain');
         }
 
@@ -142,12 +149,28 @@ async function run() {
         //  Add to path in any case
         core.addPath(path.join(process.cwd(), install_dir, 'bin'));
 
+        //  Identify the major version number to choose between config/settings
+        const major : number = parseInt(version.split(".")[0], 10);
+        const settings_cmd : string = (major >= 2 ? "settings" : "config");
+
         //  Disable index auto-refresh asking, that may cause trouble to users
         //  on first run, but only if the major version is >=2, which
         //  introduced the feature.
         if (parseInt(version.split(".")[0], 10) >= 2) {
             await exec.exec(`alr -n settings --global --set index.auto_update_asked true`);
             console.log("Enabled index auto-refresh without further asking.");
+        }
+
+        //  Disable msys2 installation if requested
+        if (process.platform == "win32") {
+            if (msys2) {
+                //  Re-enable in case it was disabled during previous actions steps
+                await exec.exec(`alr -n ${settings_cmd} --global --set msys2.do_not_install false`);
+                console.log(`MSYS2 installation NOT disabled (msys2=${msys2})`);
+            } else {
+                await exec.exec(`alr -n ${settings_cmd} --global --set msys2.do_not_install true`);
+                console.log(`MSYS2 installation DISABLED (msys2=${msys2})`);
+            }
         }
 
         // And configure the toolchain

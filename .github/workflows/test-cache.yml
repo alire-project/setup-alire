@@ -45,6 +45,8 @@ jobs:
         with:
           version: ${{matrix.config.version}}
           branch: ${{matrix.config.branch}}
+          msys2: false
+          # Not needed, speed up test. This is tested in selftest.yml
 
       # Next attemp should hit cache given the previous run
 
@@ -55,6 +57,7 @@ jobs:
         with:
           version: ${{matrix.config.version}}
           branch: ${{matrix.config.branch}}
+          msys2: false
 
       - name: Diagnose cache use
         shell: bash
