@@ -1,52 +1,63 @@
-# Changes to the v2 branch must be proposed via PRs in the branch
-# v2-next. This way we can check the action just as GHA is going to
-# use it.
-
 name: Selftest
 
 on:
   pull_request:
-    # branches:
-    #   - disabled
+  workflow_dispatch:
 
 jobs:
   setup-alire:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-12, macos-14, windows-latest]
-        target: [stable, nightly, source]
+        os:
+          - macos-12
+          - macos-14
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        target:
+            - nightly
+            - source
+            - stable
 
     runs-on: ${{ matrix.os }}
 
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup stable
-        uses: ./ # This uses the action code in the current PR
         if: matrix.target == 'stable'
+        uses: ./ # This uses the action code in the current PR
         with:
           cache: false
           # We test without cache, as caching is tested in a separate workflow.
           # This way we make sure the cache isn't hiding any issue.
 
       - name: Setup nightly
-        uses: ./
         if: matrix.target == 'nightly'
+        uses: ./
         with:
           version: nightly
           cache: false
 
       - name: Setup from source (master)
-        uses: ./
         if: matrix.target == 'source'
+        uses: ./
         with:
           branch: master
           cache: false
 
-      # Verify proper builds
+      # Check alr and default toolchains
+      - run: alr -n version
+      - run: |
+          alr -n init --bin alrws
+          cd alrws
+          alr exec -- gnat --version
+          alr exec -- gprbuild --version
+
+      # Verify proper OS
 
       - run: alr -n version | grep "os:" | grep LINUX
         if: matrix.os == 'ubuntu-latest'
@@ -58,4 +69,14 @@ jobs:
 
       - run: alr -n version | grep "os:" | grep WINDOWS
         if: matrix.os == 'windows-latest'
+        shell: bash
+
+      # Verify proper architecture
+
+      - run: alr -n version | grep "arch:" | grep X86_64
+        if: runner.arch == 'X64'
+        shell: bash
+
+      - run: alr -n version | grep "arch:" | grep AARCH64
+        if: runner.arch == 'ARM64'
         shell: bash
