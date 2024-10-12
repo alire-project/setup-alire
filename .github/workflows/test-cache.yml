@@ -24,12 +24,29 @@ jobs:
             branch:  ''
           - version: ''
             branch:  'master'
+        msys2:
+          - true
+          - false
         # Exclude combos that do not make sense (we dont have aarm64 for 1.2.2)
         exclude:
           - os: macos-14
             config: {version: '1.2.2', branch: ''}
           - os: macos-latest
             config: {version: '1.2.2', branch: ''}
+          - os: windows-latest
+            config: {version: '1.2.2'}
+            msys2: false # We don't have the option to disable install on 1.2.2
+
+          # We don't exclude the following because this way we verify that the
+          # same cache is used for both msys2 true and false on non-Windows.
+          # - os: macos-12
+          #   msys2: true
+          # - os: macos-14
+          #   msys2: true
+          # - os: macos-stable
+          #   msys2: true
+          # - os: ubuntu-latest
+          #   msys2: true
 
     runs-on: ${{ matrix.os }}
 
@@ -44,7 +61,8 @@ jobs:
         uses: ./
         with:
           version: ${{matrix.config.version}}
-          branch: ${{matrix.config.branch}}
+          branch:  ${{matrix.config.branch}}
+          msys2:   ${{ matrix.msys2 }}
 
       # Next attemp should hit cache given the previous run
 
@@ -54,7 +72,8 @@ jobs:
         uses: ./
         with:
           version: ${{matrix.config.version}}
-          branch: ${{matrix.config.branch}}
+          branch:  ${{matrix.config.branch}}
+          msys2:   ${{ matrix.msys2 }}
 
       - name: Diagnose cache use
         shell: bash
@@ -77,7 +96,7 @@ jobs:
           alr exec -- gnat --version
           alr exec -- gprbuild --version
 
-      # Verify proper builds
+      # Verify proper OS
       - run: alr -n version | grep "os:" | grep LINUX
         if: matrix.os == 'ubuntu-latest'
         shell: bash
@@ -88,4 +107,24 @@ jobs:
 
       - run: alr -n version | grep "os:" | grep WINDOWS
         if: matrix.os == 'windows-latest'
+        shell: bash
+
+      # Verify proper architecture
+
+      - run: alr -n version | grep "arch:" | grep X86_64
+        if: runner.arch == 'X64'
+        shell: bash
+
+      - run: alr -n version | grep "arch:" | grep AARCH64
+        if: runner.arch == 'ARM64'
+        shell: bash
+
+      # Verify proper msys2 behavior
+
+      - run: alr -n version | grep "distribution:" | grep MSYS2
+        if: matrix.os == 'windows-latest' && matrix.msys2 == true
+        shell: bash
+
+      - run: alr -n version | grep "distribution:" | grep UNKNOWN
+        if: matrix.os == 'windows-latest' && matrix.msys2 == false
         shell: bash

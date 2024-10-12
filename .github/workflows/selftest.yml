@@ -19,6 +19,16 @@ jobs:
             - nightly
             - source
             - stable
+        msys2:  [true, false]
+        exclude:
+          - os: macos-12
+            msys2: true
+          - os: macos-14
+            msys2: true
+          - os: macos-stable
+            msys2: true
+          - os: ubuntu-latest
+            msys2: true
 
     runs-on: ${{ matrix.os }}
 
@@ -31,6 +41,7 @@ jobs:
         if: matrix.target == 'stable'
         uses: ./ # This uses the action code in the current PR
         with:
+          msys2: ${{ matrix.msys2 }}
           cache: false
           # We test without cache, as caching is tested in a separate workflow.
           # This way we make sure the cache isn't hiding any issue.
@@ -39,6 +50,7 @@ jobs:
         if: matrix.target == 'nightly'
         uses: ./
         with:
+          msys2: ${{ matrix.msys2 }}
           version: nightly
           cache: false
 
@@ -46,6 +58,7 @@ jobs:
         if: matrix.target == 'source'
         uses: ./
         with:
+          msys2: ${{ matrix.msys2 }}
           branch: master
           cache: false
 
@@ -79,4 +92,14 @@ jobs:
 
       - run: alr -n version | grep "arch:" | grep AARCH64
         if: runner.arch == 'ARM64'
+        shell: bash
+
+      # Verify proper msys2 behavior
+
+      - run: alr -n version | grep "distribution:" | grep MSYS2
+        if: matrix.os == 'windows-latest' && matrix.msys2 == true
+        shell: bash
+
+      - run: alr -n version | grep "distribution:" | grep UNKNOWN
+        if: matrix.os == 'windows-latest' && matrix.msys2 == false
         shell: bash
