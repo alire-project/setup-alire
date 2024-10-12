@@ -1,13 +1,8 @@
-# Changes to the v2 branch must be proposed via PRs in the branch
-# v3-next. This way we can check the action just as GHA is going to
-# use it.
-
 name: Test cache
 
 on:
   pull_request:
-    # branches:
-    #   - disabled
+  workflow_dispatch:
 
 jobs:
   test-cache:
@@ -15,11 +10,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
+          - macos-12
+          - macos-14
           - macos-latest
           - ubuntu-latest
           - windows-latest
         config:
-          - version: '2.0.1'
+          - version: '2.0.2'
             branch:  ''
           - version: '1.2.2'
             branch:  ''
@@ -27,12 +24,18 @@ jobs:
             branch:  ''
           - version: ''
             branch:  'master'
+        # Exclude combos that do not make sense (we dont have aarm64 for 1.2.2)
+        exclude:
+          - os: macos-14
+            config: {version: '1.2.2', branch: ''}
+          - os: macos-latest
+            config: {version: '1.2.2', branch: ''}
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # This might hit cache
 
