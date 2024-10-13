@@ -10,9 +10,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-12
-          - macos-14
-          - macos-latest
+          - macos-13     # x64
+          - macos-latest # arm64
           - ubuntu-latest
           - windows-latest
         config:
@@ -29,7 +28,7 @@ jobs:
           - false
         # Exclude combos that do not make sense (we dont have aarm64 for 1.2.2)
         exclude:
-          - os: macos-14
+          - os: macos-13
             config: {version: '1.2.2', branch: ''}
           - os: macos-latest
             config: {version: '1.2.2', branch: ''}
@@ -39,11 +38,9 @@ jobs:
 
           # We don't exclude the following because this way we verify that the
           # same cache is used for both msys2 true and false on non-Windows.
-          # - os: macos-12
+          # - os: macos-13
           #   msys2: true
-          # - os: macos-14
-          #   msys2: true
-          # - os: macos-stable
+          # - os: macos-latest
           #   msys2: true
           # - os: ubuntu-latest
           #   msys2: true

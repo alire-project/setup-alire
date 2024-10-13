@@ -10,9 +10,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-12
-          - macos-14
-          - macos-latest
+          - macos-13     # x64
+          - macos-latest # arm64
           - ubuntu-latest
           - windows-latest
         target:
@@ -21,11 +20,9 @@ jobs:
             - stable
         msys2:  [true, false]
         exclude:
-          - os: macos-12
+          - os: macos-13
             msys2: true
-          - os: macos-14
-            msys2: true
-          - os: macos-stable
+          - os: macos-latest
             msys2: true
           - os: ubuntu-latest
             msys2: true
