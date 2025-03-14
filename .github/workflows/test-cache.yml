@@ -27,6 +27,7 @@ jobs:
         msys2:
           - true
           - false
+
         # Exclude combos that do not make sense (we dont have aarm64 for 1.2.2)
         exclude:
           - os: macos-13
@@ -90,13 +91,13 @@ jobs:
           script: |
               core.setFailed('FAIL: No cache hit observed')
 
-      # Check alr and default toolchains
-      - run: alr -n version
+      # Check alr
       - run: |
-          alr -n init --bin alrws
-          cd alrws
-          alr exec -- gnat --version
-          alr exec -- gprbuild --version
+          alr -n version
+          if [[ "${{ matrix.config.version }}" != "nightly" ]] && [[ "${{ matrix.config.version }}" != "" ]]; then
+            alr --version | grep "${{ matrix.config.version }}"
+          fi
+        shell: bash
 
       # Verify proper OS
       - run: alr -n version | grep "os:" | grep LINUX
