@@ -13,9 +13,10 @@ jobs:
           - macos-13     # x64
           - macos-latest # arm64
           - ubuntu-latest
+          - ubuntu-24.04-arm
           - windows-latest
         config:
-          - version: '2.0.2'
+          - version: '2.1.0'
             branch:  ''
           - version: '1.2.2'
             branch:  ''
@@ -31,6 +32,8 @@ jobs:
           - os: macos-13
             config: {version: '1.2.2', branch: ''}
           - os: macos-latest
+            config: {version: '1.2.2', branch: ''}
+          - os: ubuntu-24.04-arm
             config: {version: '1.2.2', branch: ''}
           - os: windows-latest
             config: {version: '1.2.2'}
@@ -108,13 +111,7 @@ jobs:
 
       # Verify proper architecture
 
-      - run: alr -n version | grep "arch:" | grep X86_64
-        if: runner.arch == 'X64'
-        shell: bash
-
-      - run: alr -n version | grep "arch:" | grep AARCH64
-        if: runner.arch == 'ARM64'
-        shell: bash
+      - uses: mosteo-actions/alr-arch-checker@v1
 
       # Verify proper msys2 behavior
 

@@ -10,9 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13     # x64
-          - macos-latest # arm64
-          - ubuntu-latest
+          - macos-13          # x64
+          - macos-latest      # arm64
+          - ubuntu-latest     # x64
+          - ubuntu-24.04-arm  # arm64
           - windows-latest
         target:
             - nightly
@@ -83,13 +84,7 @@ jobs:
 
       # Verify proper architecture
 
-      - run: alr -n version | grep "arch:" | grep X86_64
-        if: runner.arch == 'X64'
-        shell: bash
-
-      - run: alr -n version | grep "arch:" | grep AARCH64
-        if: runner.arch == 'ARM64'
-        shell: bash
+      - uses: mosteo-actions/alr-arch-checker@v1
 
       # Verify proper msys2 behavior
 
