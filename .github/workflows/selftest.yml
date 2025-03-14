@@ -79,6 +79,8 @@ jobs:
           cd alrws
           alr exec -- gnat --version
           alr exec -- gprbuild --version
+        if: matrix.toolchain.args != '--disable-assistant'
+        # alr init fails without a toolchain
 
       # Verify proper OS
 

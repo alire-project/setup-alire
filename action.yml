@@ -205,6 +205,7 @@ runs:
 
     # Report GNAT version if available (might be deselected with `toolchain` argument)
     - shell: bash
+      if: inputs.toolchain != '--disable-assistant'
       run: |
         alr -n -q init --bin find_gnat >/dev/null && cd find_gnat
         echo "Using gnat: $(alr exec -- which gnat)" || true
