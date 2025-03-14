@@ -63,6 +63,7 @@ jobs:
           version: ${{matrix.config.version}}
           branch:  ${{matrix.config.branch}}
           msys2:   ${{ matrix.msys2 }}
+          toolchain: --disable-assistant # Smaller download for this test, this is tested in selftest.yml
 
       # Next attemp should hit cache given the previous run
 
@@ -74,6 +75,7 @@ jobs:
           version: ${{matrix.config.version}}
           branch:  ${{matrix.config.branch}}
           msys2:   ${{ matrix.msys2 }}
+          toolchain: --disable-assistant
 
       - name: Diagnose cache use
         shell: bash
