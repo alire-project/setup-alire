@@ -13,9 +13,10 @@ jobs:
           - macos-13     # x64
           - macos-latest # arm64
           - ubuntu-latest
+          - ubuntu-24.04-arm
           - windows-latest
         config:
-          - version: '2.0.2'
+          - version: '2.1.0'
             branch:  ''
           - version: '1.2.2'
             branch:  ''
@@ -26,11 +27,14 @@ jobs:
         msys2:
           - true
           - false
+
         # Exclude combos that do not make sense (we dont have aarm64 for 1.2.2)
         exclude:
           - os: macos-13
             config: {version: '1.2.2', branch: ''}
           - os: macos-latest
+            config: {version: '1.2.2', branch: ''}
+          - os: ubuntu-24.04-arm
             config: {version: '1.2.2', branch: ''}
           - os: windows-latest
             config: {version: '1.2.2'}
@@ -60,6 +64,7 @@ jobs:
           version: ${{matrix.config.version}}
           branch:  ${{matrix.config.branch}}
           msys2:   ${{ matrix.msys2 }}
+          toolchain: --disable-assistant # Smaller download for this test, this is tested in selftest.yml
 
       # Next attemp should hit cache given the previous run
 
@@ -71,6 +76,7 @@ jobs:
           version: ${{matrix.config.version}}
           branch:  ${{matrix.config.branch}}
           msys2:   ${{ matrix.msys2 }}
+          toolchain: --disable-assistant
 
       - name: Diagnose cache use
         shell: bash
@@ -85,13 +91,13 @@ jobs:
           script: |
               core.setFailed('FAIL: No cache hit observed')
 
-      # Check alr and default toolchains
-      - run: alr -n version
+      # Check alr
       - run: |
-          alr -n init --bin alrws
-          cd alrws
-          alr exec -- gnat --version
-          alr exec -- gprbuild --version
+          alr -n version
+          if [[ "${{ matrix.config.version }}" != "nightly" ]] && [[ "${{ matrix.config.version }}" != "" ]]; then
+            alr --version | grep "${{ matrix.config.version }}"
+          fi
+        shell: bash
 
       # Verify proper OS
       - run: alr -n version | grep "os:" | grep LINUX
@@ -108,13 +114,7 @@ jobs:
 
       # Verify proper architecture
 
-      - run: alr -n version | grep "arch:" | grep X86_64
-        if: runner.arch == 'X64'
-        shell: bash
-
-      - run: alr -n version | grep "arch:" | grep AARCH64
-        if: runner.arch == 'ARM64'
-        shell: bash
+      - uses: mosteo-actions/alr-arch-checker@v1
 
       # Verify proper msys2 behavior
 

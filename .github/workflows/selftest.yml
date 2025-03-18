@@ -6,19 +6,29 @@ on:
 
 jobs:
   setup-alire:
+    name: setup (${{ matrix.target }}, ${{ matrix.os }}, msys2=${{ matrix.msys2 }}, ${{ matrix.toolchain.id }})
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-13     # x64
-          - macos-latest # arm64
-          - ubuntu-latest
+          - macos-13          # x64
+          - macos-latest      # arm64
+          - ubuntu-latest     # x64
+          - ubuntu-24.04-arm  # arm64
           - windows-latest
         target:
             - nightly
             - source
             - stable
         msys2:  [true, false]
+        toolchain:
+          # The two first ones should be equivalent, but just in case
+          - args: 'gnat_native gprbuild'
+            id: explicit toolchain
+          - args: '--select'
+            id: interactive toolchain
+          - args: '--disable-assistant'
+            id: no toolchain
         exclude:
           - os: macos-13
             msys2: true
@@ -40,6 +50,7 @@ jobs:
         with:
           msys2: ${{ matrix.msys2 }}
           cache: false
+          toolchain: ${{ matrix.toolchain.args }}
           # We test without cache, as caching is tested in a separate workflow.
           # This way we make sure the cache isn't hiding any issue.
 
@@ -49,6 +60,7 @@ jobs:
         with:
           msys2: ${{ matrix.msys2 }}
           version: nightly
+          toolchain: ${{ matrix.toolchain.args }}
           cache: false
 
       - name: Setup from source (master)
@@ -57,6 +69,7 @@ jobs:
         with:
           msys2: ${{ matrix.msys2 }}
           branch: master
+          toolchain: ${{ matrix.toolchain.args }}
           cache: false
 
       # Check alr and default toolchains
@@ -66,6 +79,8 @@ jobs:
           cd alrws
           alr exec -- gnat --version
           alr exec -- gprbuild --version
+        if: matrix.toolchain.args != '--disable-assistant'
+        # alr init fails without a toolchain
 
       # Verify proper OS
 
@@ -83,13 +98,7 @@ jobs:
 
       # Verify proper architecture
 
-      - run: alr -n version | grep "arch:" | grep X86_64
-        if: runner.arch == 'X64'
-        shell: bash
-
-      - run: alr -n version | grep "arch:" | grep AARCH64
-        if: runner.arch == 'ARM64'
-        shell: bash
+      - uses: mosteo-actions/alr-arch-checker@v1
 
       # Verify proper msys2 behavior
 
