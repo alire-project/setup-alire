@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13          # x64
+          - macos-15-intel    # x64
           - macos-latest      # arm64
           - ubuntu-latest     # x64
           - ubuntu-24.04-arm  # arm64
@@ -30,7 +30,7 @@ jobs:
           - args: '--disable-assistant'
             id: no toolchain
         exclude:
-          - os: macos-13
+          - os: macos-15-intel
             msys2: true
           - os: macos-latest
             msys2: true
