@@ -34,11 +34,15 @@ async function detect_cached(version : string, branch : string) : Promise<boolea
     // Compare the cached version against the requested one. `alr --version`
     // outputs e.g. `alr 2.1.0`.
     var output : string = ""
-    await exec.exec(alr_path, ["--version"], {
-        listeners: {
-            stdout: (data : Buffer) => { output += data.toString() }
-        }
-    });
+    try {
+        await exec.exec(alr_path, ["--version"], {
+            listeners: {
+                stdout: (data : Buffer) => { output += data.toString() }
+            }
+        });
+    } catch (e) {
+        return reinstall("CACHE SKIP (failed to execute existing alr, reinstalling)")
+    }
     const cached_version = output.trim().split(/\s+/)[1]
 
     if (cached_version == version) {
