@@ -20,7 +20,7 @@ async function detect_cached(version : string, branch : string) : Promise<boolea
     function reinstall(reason : string) : boolean {
         console.log(reason)
         // Remove the stale install so it can be reinstalled cleanly.
-        fs.rmSync(path.join(process.cwd(), install_dir), { recursive: true, force: true })
+        // fs.rmSync(path.join(process.cwd(), install_dir), { recursive: true, force: true })
         return false
     }
 
