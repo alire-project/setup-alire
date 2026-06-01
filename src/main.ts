@@ -8,14 +8,44 @@ import path from "path";
 
 const install_dir : string = "alire_install";
 
-function detect_cached() : boolean {
+async function detect_cached(version : string, branch : string) : Promise<boolean> {
     const ext = (process.platform == "win32" ? ".exe" : "")
-    if (fs.existsSync(path.join(process.cwd(), install_dir, "bin", `alr${ext}`))) {
-        console.log("CACHE HIT")
-        return true
-    } else {
+    const alr_path = path.join(process.cwd(), install_dir, "bin", `alr${ext}`)
+
+    if (!fs.existsSync(alr_path)) {
         console.log("CACHE MISS")
         return false
+    }
+
+    function reinstall(reason : string) : boolean {
+        console.log(reason)
+        // Remove the stale install so it can be reinstalled cleanly.
+        fs.rmSync(path.join(process.cwd(), install_dir), { recursive: true, force: true })
+        return false
+    }
+
+    // When building from a branch, or installing the nightly, there is no
+    // fixed version to compare against, so we cannot trust the cache and we
+    // always reinstall.
+    if (branch.length > 0 || version == "nightly") {
+        return reinstall("CACHE SKIP (cannot compare branch/nightly version, reinstalling)")
+    }
+
+    // Compare the cached version against the requested one. `alr --version`
+    // outputs e.g. `alr 2.1.0`.
+    var output : string = ""
+    await exec.exec(alr_path, ["--version"], {
+        listeners: {
+            stdout: (data : Buffer) => { output += data.toString() }
+        }
+    });
+    const cached_version = output.trim().split(/\s+/)[1]
+
+    if (cached_version == version) {
+        console.log(`CACHE HIT (alr ${cached_version})`)
+        return true
+    } else {
+        return reinstall(`CACHE MISMATCH (cached alr ${cached_version}, requested ${version})`)
     }
 }
 
@@ -144,7 +174,7 @@ async function run() {
         }
 
         // Install the requested version/branch unless cached
-        const cached : boolean = detect_cached()
+        const cached : boolean = await detect_cached(version, branch)
 
         if (!cached) {
             if (branch.length == 0) {
