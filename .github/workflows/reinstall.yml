@@ -8,9 +8,12 @@ on:
 
 # This workflow exercises in-job reinstallation. This allows using several alr
 # in a same job, e.g. for old-style (actions) and new-style (alr test) testsuites.
-#   - same version requested again  -> CACHE HIT, no reinstall
-#   - different version requested   -> CACHE MISMATCH, reinstall
-#   - branch or nightly requested   -> never cached, always reinstall
+# Reuse is decided entirely by the GitHub Actions cache (the cache key encodes
+# version/branch hash, toolchain, OS and arch); within a job a saved cache is
+# retrievable by later steps, so we can verify:
+#   - same version requested again  -> GHA cache hit, no reinstall
+#   - different version requested   -> GHA cache miss, clean reinstall
+#   - branch or nightly requested   -> distinct key, miss, reinstall
 
 jobs:
   reinstall:

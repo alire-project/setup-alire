@@ -8,51 +8,6 @@ import path from "path";
 
 const install_dir : string = "alire_install";
 
-async function detect_cached(version : string, branch : string) : Promise<boolean> {
-    const ext = (process.platform == "win32" ? ".exe" : "")
-    const alr_path = path.join(process.cwd(), install_dir, "bin", `alr${ext}`)
-
-    if (!fs.existsSync(alr_path)) {
-        console.log("CACHE MISS")
-        return false
-    }
-
-    function reinstall(reason : string) : boolean {
-        console.log(reason)
-        // Remove the stale install so it can be reinstalled cleanly.
-        // fs.rmSync(path.join(process.cwd(), install_dir), { recursive: true, force: true })
-        return false
-    }
-
-    // When building from a branch, or installing the nightly, there is no
-    // fixed version to compare against, so we cannot trust the cache and we
-    // always reinstall.
-    if (branch.length > 0 || version == "nightly") {
-        return reinstall("CACHE SKIP (cannot compare branch/nightly version, reinstalling)")
-    }
-
-    // Compare the cached version against the requested one. `alr --version`
-    // outputs e.g. `alr 2.1.0`.
-    var output : string = ""
-    try {
-        await exec.exec(alr_path, ["--version"], {
-            listeners: {
-                stdout: (data : Buffer) => { output += data.toString() }
-            }
-        });
-    } catch (e) {
-        return reinstall("CACHE SKIP (failed to execute existing alr, reinstalling)")
-    }
-    const cached_version = output.trim().split(/\s+/)[1]
-
-    if (cached_version == version) {
-        console.log(`CACHE HIT (alr ${cached_version})`)
-        return true
-    } else {
-        return reinstall(`CACHE MISMATCH (cached alr ${cached_version}, requested ${version})`)
-    }
-}
-
 async function install_branch(branch : string) {
     const repo_url  : string = "https://github.com/alire-project/alire.git";
 
@@ -177,10 +132,21 @@ async function run() {
             throw new Error("MSYS2 installation is mandatory for alr<2.0");
         }
 
-        // Install the requested version/branch unless cached
-        const cached : boolean = await detect_cached(version, branch)
+        // Whether a reusable installation already exists is decided solely by
+        // the GitHub Actions cache (the cache key encodes version/branch hash,
+        // toolchain, OS and arch). The action passes us that verdict; we do not
+        // re-derive it by inspecting the filesystem.
+        const cache_hit : boolean = process.env.SETUP_ALIRE_CACHE_HIT === "true"
 
-        if (!cached) {
+        if (cache_hit) {
+            console.log("Reusing alr installation restored from the GHA cache")
+        } else {
+            // No cache: install from scratch. Start from an empty target dir so
+            // we never mix files from a previous in-job install (and so that
+            // `git clone` for branch builds doesn't fail on a non-empty dir).
+            console.log("No cached alr installation; installing fresh")
+            fs.rmSync(path.join(process.cwd(), install_dir), { recursive: true, force: true })
+
             if (branch.length == 0) {
                 await install_release(version);
             }
@@ -213,7 +179,7 @@ async function run() {
         }
 
         // And configure the toolchain
-        if (tool_args.length > 0 && !cached) {
+        if (tool_args.length > 0 && !cache_hit) {
             await exec.exec(`alr -n toolchain ${tool_args != "--disable-assistant" ? "--select " : ""} ${tool_args}`);
             // Disable the assistant anyway if we have selected something. This will no longer be necessary after 1.1.1
             if (tool_args != "--disable-assistant") {

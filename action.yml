@@ -176,12 +176,16 @@ runs:
       with:
         node-version: 20
 
-    # Install alr. If found cached it will return without reinstalling (but setting PATH).
+    # Install alr. On a GHA cache hit the script only sets PATH (no reinstall);
+    # on a miss it installs fresh. The cache verdict is the single source of
+    # truth and is passed in via SETUP_ALIRE_CACHE_HIT.
     # We forward inputs as they're bugged for JS in composite actions.
 
     - run: node $(echo "${{ github.action_path }}/lib/main.js" | sed 's/\\/\//g') '${{ toJSON(inputs) }}'
       shell: bash
       # on Windows, backlashes mess things for bash, and powershell chokes on toJSON output
+      env:
+        SETUP_ALIRE_CACHE_HIT: ${{ steps.cache-output.outputs.cache_hit }}
 
     # Verify architecture of the installed alr
 
