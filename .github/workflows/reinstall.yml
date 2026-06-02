@@ -1,0 +1,122 @@
+name: reinstall
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+  workflow_dispatch:
+
+# This workflow exercises in-job reinstallation. This allows using several alr
+# in a same job, e.g. for old-style (actions) and new-style (alr test)
+# testsuites without behavior changes.
+
+# In this workflow we don't care if the cache is hit or not, but that the `alr`
+# in the PATH is the one we expect after each install.
+
+jobs:
+  reinstall:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        cache: [true, false]
+    runs-on: ${{ matrix.os }}
+
+    env:
+      first_version:  '2.1.0'
+      second_version: '2.1.1'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # First install of an initial version
+
+    - name: First install (${{ env.first_version }})
+      uses: ./ # The action code in the current checkout
+      with:
+        version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
+
+    - name: Verify first install reports ${{ env.first_version }}
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -q "alr ${first_version}" \
+          || { echo "FAIL: expected alr ${first_version}"; exit 1; }
+
+    # Second install of the SAME version: must be a cache hit and keep the
+    # already-installed alr (no reinstall). In truth, we don't see the cache
+    # hit; that can be verified in the action log.
+
+    - name: Reinstall same version (${{ env.first_version }})
+      uses: ./
+      with:
+        version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
+
+    - name: Verify same version still reports ${{ env.first_version }}
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -q "alr ${first_version}" \
+          || { echo "FAIL: expected alr ${first_version} after same-version reinstall"; exit 1; }
+
+    # Third install of a DIFFERENT version
+
+    - name: Reinstall different version (${{ env.second_version }})
+      uses: ./
+      with:
+        version: ${{ env.second_version }}
+        cache: ${{ matrix.cache }}
+
+    - name: Verify reinstall now reports ${{ env.second_version }}
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -q "alr ${second_version}" \
+          || { echo "FAIL: expected alr ${second_version} after version-mismatch reinstall"; exit 1; }
+
+    # Install 'nightly'
+
+    - name: Reinstall as nightly
+      uses: ./
+      with:
+        version: nightly
+        cache: ${{ matrix.cache }}
+
+    - name: Verify nightly forced a reinstall (no longer ${{ env.second_version }})
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -qv "alr ${second_version}" \
+          || { echo "FAIL: nightly did not reinstall, still reports ${second_version}"; exit 1; }
+
+    # Reinstall first version for later check against a branch
+
+    - name: Reinstall stable again (${{ env.first_version }})
+      uses: ./
+      with:
+        version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
+
+    - name: Verify back to ${{ env.first_version }}
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -q "alr ${first_version}" \
+          || { echo "FAIL: expected alr ${first_version} after reinstall over nightly"; exit 1; }
+
+    # Test branch install
+
+    - name: Reinstall from branch (master)
+      uses: ./
+      with:
+        branch: master
+        cache: ${{ matrix.cache }}
+
+    - name: Verify branch forced a reinstall (no longer ${{ env.first_version }})
+      shell: bash
+      run: |
+        alr --version
+        alr --version | grep -qv "alr ${first_version}" \
+          || { echo "FAIL: branch install did not reinstall, still reports ${first_version}"; exit 1; }
