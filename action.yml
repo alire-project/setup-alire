@@ -10,7 +10,7 @@ inputs:
       argument will be ignored if a branch argument is supplied. Defaults to
       the latest stable release.
     required: false
-    default: '2.1.0'
+    default: '2.1.1'
     # Also to be updated in test-cache-yml
   branch:
     description: Use this argument to install a development branch (e.g., master).
