@@ -2,6 +2,10 @@ name: 'Alire Setup'
 description: 'Install Alire package manager'
 author: 'Alire Project'
 
+branding:
+  icon: 'package'
+  color: 'green'
+
 inputs:
   version:
     description: >
