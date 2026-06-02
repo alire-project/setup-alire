@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Installer of Alire for github actions",
+  "type": "module",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc"
