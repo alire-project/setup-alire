@@ -15,8 +15,8 @@
   "author": "Alire Developers",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.9.1",
-    "@actions/tool-cache": "^2"
+    "@actions/core": "^3.0.1",
+    "@actions/tool-cache": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
