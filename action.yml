@@ -183,7 +183,8 @@ runs:
 
     - run: node $(echo "${{ github.action_path }}/lib/main.js" | sed 's/\\/\//g') '${{ toJSON(inputs) }}'
       shell: bash
-      # on Windows, backlashes mess things for bash, and powershell chokes on toJSON output
+      # on Windows, backslashes mess things for bash, and powershell chokes on
+      # toJSON output
       env:
         SETUP_ALIRE_CACHE_HIT: ${{ steps.cache-output.outputs.cache_hit }}
 

@@ -8,7 +8,7 @@ on:
 
 # This workflow exercises in-job reinstallation. This allows using several alr
 # in a same job, e.g. for old-style (actions) and new-style (alr test)
-# testsuites.
+# testsuites without behavior changes.
 
 # In this workflow we don't care if the cache is hit or not, but that the `alr`
 # in the PATH is the one we expect after each install.
@@ -19,6 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
+        cache: [true, false]
     runs-on: ${{ matrix.os }}
 
     env:
@@ -34,6 +35,7 @@ jobs:
       uses: ./ # The action code in the current checkout
       with:
         version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
 
     - name: Verify first install reports ${{ env.first_version }}
       shell: bash
@@ -50,6 +52,7 @@ jobs:
       uses: ./
       with:
         version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
 
     - name: Verify same version still reports ${{ env.first_version }}
       shell: bash
@@ -64,6 +67,7 @@ jobs:
       uses: ./
       with:
         version: ${{ env.second_version }}
+        cache: ${{ matrix.cache }}
 
     - name: Verify reinstall now reports ${{ env.second_version }}
       shell: bash
@@ -78,6 +82,7 @@ jobs:
       uses: ./
       with:
         version: nightly
+        cache: ${{ matrix.cache }}
 
     - name: Verify nightly forced a reinstall (no longer ${{ env.second_version }})
       shell: bash
@@ -92,6 +97,7 @@ jobs:
       uses: ./
       with:
         version: ${{ env.first_version }}
+        cache: ${{ matrix.cache }}
 
     - name: Verify back to ${{ env.first_version }}
       shell: bash
@@ -106,6 +112,7 @@ jobs:
       uses: ./
       with:
         branch: master
+        cache: ${{ matrix.cache }}
 
     - name: Verify branch forced a reinstall (no longer ${{ env.first_version }})
       shell: bash
