@@ -82,7 +82,7 @@ runs:
     - name: Reuse cached installation
       if: ${{ inputs.cache == 'true' }}
       id: cache-alr
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: |
           ~/.cache/alire
@@ -176,9 +176,9 @@ runs:
 
     # To run the old setup action which is javascript
     - name: Setup Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 24
 
     # Install alr. On a GHA cache hit the script only sets PATH (no reinstall);
     # on a miss it installs fresh. The cache verdict is the single source of
@@ -226,7 +226,7 @@ runs:
     # When cache was hit, attempting to save will fail and emit a warning, so avoid it.
     - name: Cache install
       if: ${{ inputs.cache == 'true' && steps.cache-alr.outputs.cache-hit != 'true' }}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: |
           ~/.cache/alire
@@ -239,7 +239,7 @@ runs:
     # Verify cache was saved properly
     - name: Cache verify
       if: ${{ inputs.cache == 'true' && steps.cache-alr.outputs.cache-hit != 'true' }}
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: |
           ~/.cache/alire
